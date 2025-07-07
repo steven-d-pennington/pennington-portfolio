@@ -3,10 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 // Initialize the Supabase client
 // These environment variables should be set in your deployment environment
 // For local development, you can use a .env.local file
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-url.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
 // Create a single supabase client for the entire app
+// This will be a mock client if environment variables are not set
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Helper function to submit a contact/quote request
