@@ -101,10 +101,54 @@ Replace the placeholder icons in the `public/` directory with your own:
 
 ### Environment Variables
 
-No environment variables are required for basic functionality. For production, consider adding:
+For basic functionality, no environment variables are required. For production with contact form functionality, you'll need to set up:
 
+#### Supabase Configuration (for contact form)
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+
+#### Other Optional Variables
 - `NEXT_PUBLIC_SITE_URL` - Your site URL
 - `NEXT_PUBLIC_GA_ID` - Google Analytics ID (if using)
+
+Copy `.env.example` to `.env.local` for local development and configure your environment variables.
+
+### Database Setup for Contact Form
+
+This project uses Supabase as a backend database for storing contact form submissions. To set it up:
+
+1. Create a free account at [Supabase](https://supabase.com/)
+2. Create a new project
+3. In the SQL Editor, run the following SQL to create the contact_requests table:
+
+```sql
+CREATE TABLE contact_requests (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  company TEXT,
+  project_type TEXT,
+  budget TEXT,
+  timeline TEXT,
+  description TEXT NOT NULL,
+  message TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  status TEXT DEFAULT 'new'
+);
+
+-- Create a policy to allow inserts from the client
+CREATE POLICY "Allow anonymous contact submissions" 
+  ON contact_requests 
+  FOR INSERT 
+  TO anon 
+  WITH CHECK (true);
+
+-- Enable RLS
+ALTER TABLE contact_requests ENABLE ROW LEVEL SECURITY;
+```
+
+4. Get your Supabase URL and anon key from the project settings
+5. Add these values to your environment variables
 
 ### Build Commands
 
