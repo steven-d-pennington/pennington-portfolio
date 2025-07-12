@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,11 +22,21 @@ export default function Navigation() {
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-gray-900">Steven Pennington</span>
-            </Link>
+        <div className="flex justify-between h-20 items-center">
+          <div className="flex-shrink-0 flex items-center">
+            <a href="/">
+              <Image
+                src="/monkey-love-stack.jpg"
+                alt="Monkey LoveStack Logo"
+                width={96}
+                height={96}
+                className="h-20 w-auto"
+                priority
+              />
+            </a>
+            <span className="ml-3 text-xl font-bold text-blue-700 hidden sm:inline-block">
+              Monkey LoveStack
+            </span>
           </div>
           
           {/* Desktop Navigation */}

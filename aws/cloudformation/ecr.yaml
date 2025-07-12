@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ECR Repository for Steven Pennington Portfolio'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [production, staging, development]
+    Description: Environment name
+
+Resources:
+  # ECR Repository
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${Environment}-pennington-portfolio'
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 10 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": {
+                  "type": "expire"
+                }
+              },
+              {
+                "rulePriority": 2,
+                "description": "Remove untagged images older than 1 day",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 1
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: pennington-portfolio
+
+  # ECR Repository Policy
+  ECRRepositoryPolicy:
+    Type: AWS::ECR::RepositoryPolicy
+    Properties:
+      RepositoryName: !Ref ECRRepository
+      PolicyText: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowPullFromECSTasks",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "AllowPushFromCI",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::*:role/CodeBuildServiceRole"
+              },
+              "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:PutImage",
+                "ecr:InitiateLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+
+Outputs:
+  RepositoryUri:
+    Description: ECR Repository URI
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}'
+    Export:
+      Name: !Sub '${AWS::StackName}-RepositoryUri'
+
+  RepositoryName:
+    Description: ECR Repository Name
+    Value: !Ref ECRRepository
+    Export:
+      Name: !Sub '${AWS::StackName}-RepositoryName' 

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "build:static": "next build && next export",
-    "dev:host": "next dev --turbopack -p 12000 -H 0.0.0.0"
+    "dev:host": "next dev --turbopack -p 12000 -H 0.0.0.0",
+    "test:supabase": "node test-supabase.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.3",
