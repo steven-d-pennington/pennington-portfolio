@@ -24,7 +24,7 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           <div className="flex-shrink-0 flex items-center">
-            <a href="/">
+            <Link href="/" className="flex items-center">
               <Image
                 src="/monkey-love-stack.jpg"
                 alt="Monkey LoveStack Logo"
@@ -33,7 +33,7 @@ export default function Navigation() {
                 className="h-20 w-auto"
                 priority
               />
-            </a>
+            </Link>
             <span className="ml-3 text-xl font-bold text-blue-700 hidden sm:inline-block">
               Monkey LoveStack
             </span>
