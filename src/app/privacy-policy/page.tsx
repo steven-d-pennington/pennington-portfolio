@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
       <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
       <p className="mb-4">Last updated: July 13, 2025</p>
       <p className="mb-4">
-        This Privacy Policy describes how Monkey LoveStack ("we", "us", or "our") collects, uses, and discloses your information when you use our website and services.
+        This Privacy Policy describes how Monkey LoveStack (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) collects, uses, and discloses your information when you use our website and services.
       </p>
       <h2 className="text-xl font-semibold mt-8 mb-2">Information We Collect</h2>
       <p className="mb-4">
