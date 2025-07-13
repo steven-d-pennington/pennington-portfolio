@@ -25,7 +25,7 @@ export default function ChatPage() {
       } else {
         setError(data.error || "Unknown error");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to send message.");
     }
     setInput("");
