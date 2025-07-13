@@ -1,12 +1,11 @@
-export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { submitContactRequest } from '@/utils/supabase';
 import { google } from 'googleapis';
 
-const OAUTH_USER = process.env.OAUTH_USER;
-const OAUTH_CLIENT_ID = process.env.OAUTH_CLIENT_ID;
-const OAUTH_CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET;
-const OAUTH_REFRESH_TOKEN = process.env.OAUTH_REFRESH_TOKEN;
+const OAUTH_USER = process.env.NEXT_OAUTH_USER;
+const OAUTH_CLIENT_ID = process.env.NEXT_OAUTH_CLIENT_ID;
+const OAUTH_CLIENT_SECRET = process.env.NEXT_OAUTH_CLIENT_SECRET;
+const OAUTH_REFRESH_TOKEN = process.env.NEXT_OAUTH_REFRESH_TOKEN;
 
 const OAuth2 = google.auth.OAuth2;
 
