@@ -1,5 +1,65 @@
-name = "steve-portfolio"
+name = "steven-pennington-portfolio"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 
+# Cloudflare Next.js adapter configuration
+# The adapter will generate the necessary files in .vercel/output
+
+# Main production environment
+[env.production]
+name = "steven-pennington-portfolio"
+route = "portfolio.stevenpennington.com/*"
+zone_id = "329c5c062b878610512e295fbba180c6"
+
+# Staging environment
+[env.staging]
+name = "steven-pennington-portfolio-staging"
+route = "staging.portfolio.stevenpennington.com/*"
+zone_id = "329c5c062b878610512e295fbba180c6"
+
+# Development environment
+[env.development]
+name = "steven-pennington-portfolio-dev"
+route = "dev.portfolio.stevenpennington.com/*"
+zone_id = "329c5c062b878610512e295fbba180c6"
+
+# Build configuration for Cloudflare Next.js adapter
 [build]
-command = "npm run build" 
+command = "npx @cloudflare/next-on-pages"
+
+# Environment variables for production
+[[env.production.vars]]
+name = "NODE_ENV"
+value = "production"
+
+# Secrets for production (set via wrangler secret put)
+# OAUTH_USER
+# OAUTH_CLIENT_ID
+# OAUTH_CLIENT_SECRET
+# OAUTH_REFRESH_TOKEN
+
+# Environment variables for staging
+[[env.staging.vars]]
+name = "NODE_ENV"
+value = "staging"
+
+# Environment variables for development
+[[env.development.vars]]
+name = "NODE_ENV"
+value = "development"
+
+# KV namespaces (if needed for caching)
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
+
+# Durable Objects (if needed for state management)
+# [[durable_objects.bindings]]
+# name = "COUNTER"
+# class_name = "Counter"
+
+# R2 buckets (if needed for file storage)
+# [[r2_buckets]]
+# binding = "ASSETS"
+# bucket_name = "steven-pennington-assets" 

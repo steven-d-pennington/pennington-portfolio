@@ -4,7 +4,7 @@
 
 This guide provides comprehensive deployment instructions for Steven Pennington's portfolio website across three major cloud platforms:
 
-1. **Cloudflare Pages** - Recommended for static sites with API routes
+1. **Cloudflare Pages** - Recommended for Next.js applications with API routes
 2. **AWS ECS Fargate** - Containerized deployment with auto-scaling
 3. **Google Cloud Run** - Serverless container platform
 
@@ -12,7 +12,7 @@ This guide provides comprehensive deployment instructions for Steven Pennington'
 
 | Feature | Cloudflare Pages | AWS ECS Fargate | Google Cloud Run |
 |---------|------------------|-----------------|------------------|
-| **Best For** | Static sites, edge functions | Production workloads, auto-scaling | Serverless containers |
+| **Best For** | Next.js applications, static sites | Production workloads, auto-scaling | Serverless containers |
 | **Cost** | Free tier generous | Pay per use | Pay per request |
 | **Performance** | Global CDN, edge computing | High performance, dedicated resources | Fast cold starts |
 | **Scaling** | Automatic | Auto-scaling policies | Automatic |
@@ -28,8 +28,9 @@ This guide provides comprehensive deployment instructions for Steven Pennington'
 
 ### Platform-Specific Requirements
 
-#### Cloudflare Pages
+#### Cloudflare Workers
 - Cloudflare account
+- Wrangler CLI installed (`npm install -g wrangler`)
 - GitHub repository connected
 
 #### AWS ECS Fargate
@@ -70,48 +71,121 @@ OAUTH_REFRESH_TOKEN=your-google-oauth-refresh-token
 
 ---
 
-## 1. Cloudflare Pages Deployment
+## 1. Cloudflare Workers Deployment
 
 ### Quick Start (Recommended)
 
-1. **Connect Repository**
-   - Go to [Cloudflare Pages](https://pages.cloudflare.com/)
-   - Click "Create a project" → "Connect to Git"
-   - Select your GitHub repository
+1. **Install Wrangler CLI**
+   ```bash
+   npm install -g wrangler
+   ```
 
-2. **Configure Build Settings**
-   - **Project name**: `steven-pennington-portfolio`
-   - **Production branch**: `main`
-   - **Framework preset**: `Next.js`
-   - **Build command**: `npm run build`
-   - **Build output directory**: `.next`
+2. **Login to Cloudflare**
+   ```bash
+   wrangler login
+   ```
 
-3. **Environment Variables**
-   - Go to Settings → Environment variables
-   - Add all required environment variables
-   - Set for both "Production" and "Preview"
+3. **Configure wrangler.toml**
+   ```toml
+   name = "steven-pennington-portfolio"
+   compatibility_date = "2024-01-01"
+   compatibility_flags = ["nodejs_compat"]
+
+   [env.production]
+   name = "steven-pennington-portfolio"
+   route = "portfolio.stevenpennington.com/*"
+   zone_id = "your-zone-id"
+
+   [env.staging]
+   name = "steven-pennington-portfolio-staging"
+   route = "staging.portfolio.stevenpennington.com/*"
+   zone_id = "your-zone-id"
+
+   [[env.production.vars]]
+   name = "NEXT_PUBLIC_SUPABASE_URL"
+   value = "your-supabase-project-url"
+
+   [[env.production.vars]]
+   name = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+   value = "your-supabase-anon-key"
+
+   [[env.production.secrets]]
+   name = "OAUTH_USER"
+   value = "your-gmail-address@gmail.com"
+
+   [[env.production.secrets]]
+   name = "OAUTH_CLIENT_ID"
+   value = "your-google-oauth-client-id"
+
+   [[env.production.secrets]]
+   name = "OAUTH_CLIENT_SECRET"
+   value = "your-google-oauth-client-secret"
+
+   [[env.production.secrets]]
+   name = "OAUTH_REFRESH_TOKEN"
+   value = "your-google-oauth-refresh-token"
+   ```
 
 4. **Deploy**
-   - Click "Save and Deploy"
-   - Wait for build completion (2-3 minutes)
+   ```bash
+   # Deploy to production
+   wrangler deploy --env production
+   
+   # Deploy to staging
+   wrangler deploy --env staging
+   ```
 
 ### Advanced Configuration
 
 #### Custom Domain Setup
-1. Go to your Pages project dashboard
-2. Navigate to "Custom domains"
-3. Click "Set up a custom domain"
-4. Enter your domain (e.g., `portfolio.stevenpennington.com`)
+1. **Add Domain to Cloudflare**
+   - Go to Cloudflare dashboard
+   - Add your domain (e.g., `portfolio.stevenpennington.com`)
+   - Update nameservers at your domain registrar
+
+2. **Configure Route in wrangler.toml**
+   ```toml
+   [env.production]
+   name = "steven-pennington-portfolio"
+   route = "portfolio.stevenpennington.com/*"
+   zone_id = "your-zone-id"
+   ```
+
+#### Environment Variables Management
+```bash
+# Set secrets (encrypted)
+wrangler secret put OAUTH_USER --env production
+wrangler secret put OAUTH_CLIENT_ID --env production
+wrangler secret put OAUTH_CLIENT_SECRET --env production
+wrangler secret put OAUTH_REFRESH_TOKEN --env production
+
+# Set public variables
+wrangler var put NEXT_PUBLIC_SUPABASE_URL "your-supabase-url" --env production
+wrangler var put NEXT_PUBLIC_SUPABASE_ANON_KEY "your-supabase-key" --env production
+```
 
 #### Performance Optimization
 - Enable "Auto Minify" for JavaScript, CSS, and HTML
-- Enable "Brotli" compression
 - Configure appropriate cache headers
+- Use Cloudflare's global CDN for static assets
 
 ### Monitoring
-- Built-in analytics in Pages dashboard
-- Real-time visitor data and performance metrics
-- Function logs for API routes
+- **Workers Analytics**: Built-in metrics in Cloudflare dashboard
+- **Real-time Logs**: `wrangler tail --env production`
+- **Performance Monitoring**: Web Vitals and Core Web Vitals
+
+### PowerShell Deployment (Windows)
+
+```powershell
+# Deploy to production
+wrangler deploy --env production
+
+# Deploy to staging
+wrangler deploy --env staging
+
+# View logs
+wrangler tail --env production
+```
 
 ---
 
@@ -348,7 +422,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-prod-supabase-key
 - Use different credentials per environment
 
 ### Network Security
-- **Cloudflare**: Built-in DDoS protection and WAF
+- **Cloudflare Workers**: Built-in DDoS protection and WAF
 - **AWS**: Security groups, VPC isolation, ALB security
 - **Google Cloud**: VPC firewall rules, IAM policies
 
@@ -362,9 +436,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-prod-supabase-key
 
 ## Cost Optimization
 
-### Cloudflare Pages
-- **Free Tier**: 500 builds/month, 100GB bandwidth
-- **Paid**: $20/month for additional builds and bandwidth
+### Cloudflare Workers
+- **Free Tier**: 100,000 requests/day, 10ms CPU time
+- **Paid**: $5/month for 10 million requests + additional CPU time
 
 ### AWS ECS Fargate
 - **Compute**: ~$0.04 per vCPU hour, ~$0.004 per GB hour
@@ -418,10 +492,10 @@ docker run -p 3000:3000 test-image
 
 ### Platform-Specific Issues
 
-#### Cloudflare Pages
-- Check build logs in Pages dashboard
-- Verify redirects configuration
-- Test API routes locally
+#### Cloudflare Workers
+- Check deployment logs: `wrangler tail --env production`
+- Verify wrangler.toml configuration
+- Test API routes locally with `wrangler dev`
 
 #### AWS ECS Fargate
 - Check ECS service events
@@ -459,7 +533,7 @@ docker run -p 3000:3000 test-image
 ## Support Resources
 
 ### Documentation
-- [Cloudflare Pages Documentation](https://developers.cloudflare.com/pages/)
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [AWS ECS Documentation](https://docs.aws.amazon.com/ecs/)
 - [Google Cloud Run Documentation](https://cloud.google.com/run/docs)
 
