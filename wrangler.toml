@@ -2,8 +2,8 @@ name = "steven-pennington-portfolio"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Cloudflare Next.js adapter configuration
-# The adapter will generate the necessary files in .vercel/output
+# Cloudflare Pages configuration
+pages_build_output_dir = ".next"
 
 # Main production environment
 [env.production]
