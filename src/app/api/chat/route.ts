@@ -35,7 +35,7 @@ Maintain a professional, helpful tone and demonstrate deep technical expertise w
 export async function POST(request: NextRequest) {
   try {
     const { message, persistChat, conversationHistory } = await request.json();
-    const apiKey = process.env.NEXT_OPENAI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json({ error: 'OpenAI API key not configured.' }, { status: 500 });

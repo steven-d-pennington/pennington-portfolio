@@ -19,12 +19,12 @@ In your Vercel project settings, add these environment variables:
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-OPENAI_API_KEY=your_openai_api_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+OPENAI_API_KEY=your_openai_api_key
+GMAIL_USER_EMAIL=your_gmail_email
 GMAIL_CLIENT_ID=your_gmail_client_id
 GMAIL_CLIENT_SECRET=your_gmail_client_secret
 GMAIL_REFRESH_TOKEN=your_gmail_refresh_token
-GMAIL_USER_EMAIL=your_gmail_user_email
 ```
 
 ### Step 4: Deploy
