@@ -1,9 +1,8 @@
 # Cloudflare Pages configuration for Next.js with API routes
-# This file is used for deployment to Cloudflare Pages
 
 [build]
-command = "npx @cloudflare/next-on-pages"
-publish = ".vercel/output/static"
+command = "npx @cloudflare/next-on-pages@1"
+publish = "dist"
 
 [build.environment]
 NODE_VERSION = "18"
