@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Only initialize Supabase if we have the required environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-let supabase: any = null;
+let supabase: SupabaseClient | null = null;
 if (supabaseUrl && supabaseAnonKey) {
   supabase = createClient(supabaseUrl, supabaseAnonKey);
 }
@@ -31,12 +31,6 @@ Guidelines for responses:
 6. Ask clarifying questions when the request is too broad
 
 Maintain a professional, helpful tone and demonstrate deep technical expertise while being accessible to different skill levels.`;
-
-interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: number;
-}
 
 export async function POST(request: NextRequest) {
   try {
