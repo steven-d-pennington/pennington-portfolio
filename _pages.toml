@@ -8,6 +8,9 @@ publish = ".vercel/output/static"
 NODE_VERSION = "18"
 NEXT_TELEMETRY_DISABLED = "1"
 
+# Enable Node.js compatibility for Edge Runtime
+compatibility_flags = ["nodejs_compat"]
+
 [[redirects]]
 from = "/api/*"
 to = "/api/:splat"
