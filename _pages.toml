@@ -11,7 +11,7 @@ NEXT_TELEMETRY_DISABLED = "1"
 # Functions configuration for Cloudflare Pages
 [functions]
 compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat_populate_process_env"]
+# No compatibility flags needed for Edge Runtime
 
 [[redirects]]
 from = "/api/*"
