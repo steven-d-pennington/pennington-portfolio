@@ -472,4 +472,48 @@ After setting up Supabase:
 5. **Plan data retention** strategy
 6. **Document procedures** for your team
 
-Your portfolio is now ready to collect and store contact form submissions securely! 🚀 
+Your portfolio is now ready to collect and store contact form submissions securely! 🚀
+
+---
+
+## Chat Conversations Table Setup
+
+### 2.6 Create Chat Conversations Table
+Copy and paste this SQL:
+
+```sql
+-- Create chat_conversations table
+CREATE TABLE chat_conversations (
+  id SERIAL PRIMARY KEY,
+  user_message TEXT NOT NULL,
+  assistant_response TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  ip_address INET,
+  user_agent TEXT,
+  session_id TEXT,
+  conversation_context JSONB
+);
+
+-- Create indexes for chat conversations
+CREATE INDEX idx_chat_conversations_created_at ON chat_conversations(created_at);
+CREATE INDEX idx_chat_conversations_session_id ON chat_conversations(session_id);
+
+-- Add comments for documentation
+COMMENT ON TABLE chat_conversations IS 'AI chat conversations from cloud engineering assistant';
+COMMENT ON COLUMN chat_conversations.conversation_context IS 'Additional context or metadata for the conversation';
+```
+
+### 2.7 Verify Chat Conversations Table
+Run this query to verify the table was created:
+
+```sql
+-- Check table structure
+SELECT 
+  column_name, 
+  data_type, 
+  is_nullable, 
+  column_default
+FROM information_schema.columns 
+WHERE table_name = 'chat_conversations'
+ORDER BY ordinal_position;
+```

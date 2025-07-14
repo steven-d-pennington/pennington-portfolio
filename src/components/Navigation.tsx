@@ -25,15 +25,22 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-between items-center h-full">
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center space-x-3">
               <Image
-                src="/lovestack-trans.jpg"
+                src="/lovestack-trans.png"
                 alt="Monkey LoveStack Logo"
-                width={144}
-                height={144}
-                className="h-32 w-auto"
+                width={80}
+                height={80}
+                className="h-20 w-20"
                 priority
               />
+              <div className="flex flex-col">
+                <div className="flex items-baseline">
+                  <span className="text-2xl font-bold text-gray-900">Monkey</span>
+                  <span className="text-2xl font-bold text-blue-600 ml-1">LoveStack</span>
+                </div>
+                <span className="text-sm text-gray-600 leading-tight">Engineering cloud solutions</span>
+              </div>
             </Link>
           </div>
           
