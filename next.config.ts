@@ -1,10 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export', // Required for Cloudflare Pages static export
-  trailingSlash: true, // Recommended for Cloudflare Pages
+  // Configuration for deployment
+  trailingSlash: false,
   images: {
-    unoptimized: true, // Required for static export
+    unoptimized: true,
+  },
+  
+  // Experimental features for better performance
+  experimental: {
+    serverComponentsExternalPackages: [],
   },
 };
 

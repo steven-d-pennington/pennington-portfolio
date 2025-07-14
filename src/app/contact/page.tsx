@@ -58,26 +58,45 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    setSubmitSuccess(true);
-    
-    // Reset form after success
-    setTimeout(() => {
-      setSubmitSuccess(false);
-      setFormData({
-        name: '',
-        email: '',
-        company: '',
-        projectType: '',
-        budget: '',
-        timeline: '',
-        description: '',
-        message: ''
+    try {
+      // Submit form data to our API endpoint
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
-    }, 5000);
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to submit form');
+      }
+      
+      // Show success message
+      setSubmitSuccess(true);
+      
+      // Reset form after success
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          projectType: '',
+          budget: '',
+          timeline: '',
+          description: '',
+          message: ''
+        });
+      }, 5000);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('There was an error submitting your request. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -120,7 +139,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Email</h3>
-                    <p className="text-gray-600">contact@example.com</p>
+                    <p className="text-gray-600">cloud@monkeylovestack.com</p>
                   </div>
                 </div>
                 

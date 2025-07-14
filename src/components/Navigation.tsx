@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,17 +15,32 @@ export default function Navigation() {
     { name: 'Portfolio', href: '/portfolio' },
     { name: 'Services', href: '/services' },
     { name: 'Contact', href: '/contact' },
+    { name: 'Chat', href: '/chat' },
   ];
 
   const isActive = (href: string) => pathname === href;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-gray-900">Steven Pennington</span>
+    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 h-36 flex items-center overflow-visible">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex justify-between items-center h-full">
+          <div className="flex-shrink-0 flex items-center">
+            <Link href="/" className="flex items-center space-x-3">
+              <Image
+                src="/lovestack-trans.png"
+                alt="Monkey LoveStack Logo"
+                width={80}
+                height={80}
+                className="h-20 w-20"
+                priority
+              />
+              <div className="flex flex-col">
+                <div className="flex items-baseline">
+                  <span className="text-2xl font-bold text-gray-900">Monkey</span>
+                  <span className="text-2xl font-bold text-blue-600 ml-1">LoveStack</span>
+                </div>
+                <span className="text-sm text-gray-600 leading-tight">Engineering cloud solutions</span>
+              </div>
             </Link>
           </div>
           
