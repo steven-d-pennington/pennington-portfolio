@@ -8,7 +8,8 @@ publish = ".vercel/output/static"
 NODE_VERSION = "18"
 NEXT_TELEMETRY_DISABLED = "1"
 
-# Enable Node.js compatibility for Edge Runtime
+# Cloudflare Workers compatibility for Next.js Edge Runtime
+compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 [[redirects]]
