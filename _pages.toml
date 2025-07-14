@@ -2,7 +2,7 @@
 
 [build]
 command = "npx @cloudflare/next-on-pages@1"
-publish = "dist"
+publish = ".vercel/output/static"
 
 [build.environment]
 NODE_VERSION = "18"
