@@ -3,11 +3,15 @@
 [build]
 command = "npx @cloudflare/next-on-pages@1"
 publish = ".vercel/output/static"
-compatibility_flags = "nodejs_compat_populate_process_env"
 
 [build.environment]
 NODE_VERSION = "18"
 NEXT_TELEMETRY_DISABLED = "1"
+
+# Functions configuration for Cloudflare Pages
+[functions]
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat_populate_process_env"]
 
 [[redirects]]
 from = "/api/*"
