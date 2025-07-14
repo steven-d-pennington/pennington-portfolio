@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { submitContactRequest } from '@/utils/supabase';
-import { google } from 'googleapis';
 
 // Configure for Edge Runtime (required for Cloudflare Pages)
 export const runtime = 'edge';
@@ -10,7 +9,45 @@ const OAUTH_CLIENT_ID = process.env.OAUTH_CLIENT_ID;
 const OAUTH_CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET;
 const OAUTH_REFRESH_TOKEN = process.env.OAUTH_REFRESH_TOKEN;
 
-const OAuth2 = google.auth.OAuth2;
+// Edge Runtime compatible Gmail API functions
+async function getAccessToken(): Promise<string> {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      client_id: OAUTH_CLIENT_ID!,
+      client_secret: OAUTH_CLIENT_SECRET!,
+      refresh_token: OAUTH_REFRESH_TOKEN!,
+      grant_type: 'refresh_token',
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to refresh access token');
+  }
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function sendEmail(accessToken: string, encodedMessage: string): Promise<void> {
+  const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      raw: encodedMessage,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to send email');
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,22 +105,11 @@ export async function POST(request: NextRequest) {
       savedToDatabase = true; // Consider it "saved" for logging purposes
     }
 
-    // 2. Send email via Gmail API
+    // 2. Send email via Gmail API (Edge Runtime compatible)
     const isGmailConfigured = OAUTH_USER && OAUTH_CLIENT_ID && OAUTH_CLIENT_SECRET && OAUTH_REFRESH_TOKEN;
     
     if (isGmailConfigured) {
       try {
-        const oauth2Client = new OAuth2(
-          OAUTH_CLIENT_ID,
-          OAUTH_CLIENT_SECRET,
-          'https://developers.google.com/oauthplayground'
-        );
-
-        oauth2Client.setCredentials({
-          refresh_token: OAUTH_REFRESH_TOKEN,
-        });
-
-        const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
         const { name, email, company, projectType, budget, timeline, description, message } = formData;
 
         // Create the email content
@@ -110,18 +136,17 @@ Content-Type: text/html; charset=utf-8
 <p>${message ? message.replace(/\n/g, '<br>') : 'N/A'}</p>
         `.trim();
 
-        // Convert to base64url
-        const encodedMessage = Buffer.from(emailContent).toString('base64')
+        // Convert to base64url (Edge Runtime compatible)
+        const textEncoder = new TextEncoder();
+        const data = textEncoder.encode(emailContent);
+        const base64 = btoa(String.fromCharCode(...data))
           .replace(/\+/g, '-')
           .replace(/\//g, '_')
           .replace(/=+$/, '');
 
-        await gmail.users.messages.send({
-          userId: 'me',
-          requestBody: {
-            raw: encodedMessage,
-          },
-        });
+        // Get access token and send email
+        const accessToken = await getAccessToken();
+        await sendEmail(accessToken, base64);
 
         emailSent = true;
       } catch (error) {
