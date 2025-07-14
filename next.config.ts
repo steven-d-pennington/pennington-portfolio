@@ -1,11 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Standard Next.js configuration for Cloudflare Pages
-  // Let @cloudflare/next-on-pages handle the output transformation
-  
-  // Ensure proper static file handling
+  // Configuration for deployment
   trailingSlash: false,
+  images: {
+    unoptimized: true,
+  },
   
   // Experimental features for better performance
   experimental: {

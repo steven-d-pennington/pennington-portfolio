@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { submitContactRequest } from '@/utils/supabase';
 
-// Configure for Edge Runtime (required for Cloudflare Pages)
-export const runtime = 'edge';
-
 const OAUTH_USER = process.env.OAUTH_USER;
 const OAUTH_CLIENT_ID = process.env.OAUTH_CLIENT_ID;
 const OAUTH_CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET;
