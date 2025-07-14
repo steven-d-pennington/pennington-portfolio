@@ -7,10 +7,8 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   
-  // Experimental features for better performance
-  experimental: {
-    serverComponentsExternalPackages: [],
-  },
+  // External packages configuration
+  serverExternalPackages: [],
 };
 
 export default nextConfig;

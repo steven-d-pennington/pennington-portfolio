@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { submitContactRequest } from '@/utils/supabase';
 
-const OAUTH_USER = process.env.OAUTH_USER;
-const OAUTH_CLIENT_ID = process.env.OAUTH_CLIENT_ID;
-const OAUTH_CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET;
-const OAUTH_REFRESH_TOKEN = process.env.OAUTH_REFRESH_TOKEN;
+const GMAIL_USER_EMAIL = process.env.GMAIL_USER_EMAIL;
+const GMAIL_CLIENT_ID = process.env.GMAIL_CLIENT_ID;
+const GMAIL_CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
+const GMAIL_REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
 
 // Edge Runtime compatible Gmail API functions
 async function getAccessToken(): Promise<string> {
@@ -14,9 +14,9 @@ async function getAccessToken(): Promise<string> {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams({
-      client_id: OAUTH_CLIENT_ID!,
-      client_secret: OAUTH_CLIENT_SECRET!,
-      refresh_token: OAUTH_REFRESH_TOKEN!,
+      client_id: GMAIL_CLIENT_ID!,
+      client_secret: GMAIL_CLIENT_SECRET!,
+      refresh_token: GMAIL_REFRESH_TOKEN!,
       grant_type: 'refresh_token',
     }),
   });
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Send email via Gmail API (Edge Runtime compatible)
-    const isGmailConfigured = OAUTH_USER && OAUTH_CLIENT_ID && OAUTH_CLIENT_SECRET && OAUTH_REFRESH_TOKEN;
+    const isGmailConfigured = GMAIL_USER_EMAIL && GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET && GMAIL_REFRESH_TOKEN;
     
     if (isGmailConfigured) {
       try {
@@ -111,8 +111,8 @@ export async function POST(request: NextRequest) {
 
         // Create the email content
         const emailContent = `
-From: "${name}" <${OAUTH_USER}>
-To: ${OAUTH_USER}
+From: "${name}" <${GMAIL_USER_EMAIL}>
+To: ${GMAIL_USER_EMAIL}
 Reply-To: ${email}
 Subject: New Portfolio Inquiry: ${projectType || 'General Question'}
 Content-Type: text/html; charset=utf-8
