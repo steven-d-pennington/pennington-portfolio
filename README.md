@@ -1,44 +1,53 @@
-# Steve's Portfolio Website
+# Steve Pennington's Portfolio Website
 
-A modern, professional portfolio website built with Next.js, TypeScript, and Tailwind CSS. Features PWA capabilities and is optimized for Cloudflare Pages deployment.
+A modern, professional portfolio website built with Next.js, TypeScript, and Tailwind CSS. Features AI-powered chat assistant, contact form with Gmail integration, Supabase database, and multiple deployment options.
 
-## Features
+## 🌟 Features
 
 - 🎨 **Modern Design** - Clean, professional design with responsive layout
-- ⚡ **PWA Ready** - Progressive Web App with offline capabilities
+- 🤖 **AI Chat Assistant** - OpenAI GPT-4o-mini powered cloud engineering assistant
+- 📧 **Contact Form** - Gmail integration with automatic email responses
+- 💾 **Database Integration** - Supabase PostgreSQL for contact forms and chat persistence
 - 📱 **Mobile First** - Fully responsive design for all devices
 - 🚀 **Fast Performance** - Optimized for speed and SEO
-- ☁️ **Cloudflare Ready** - Configured for easy deployment on Cloudflare Pages
+- ☁️ **Multi-Platform Deploy** - Ready for Vercel, Netlify, Railway, AWS, or Cloudflare
 
-## Pages
+## 📋 Pages & Features
 
 - **Home** - Hero section, skills showcase, featured projects
-- **About** - Personal story, skills, experience, values
+- **About** - Personal story, skills, experience, values  
 - **Portfolio** - Project showcase with filtering capabilities
 - **Services** - Service offerings, process, pricing
-- **Contact** - Contact form with project bid request functionality
+- **Contact** - Advanced contact form with project details and Gmail integration
+- **Chat** - AI-powered cloud engineering assistant with conversation persistence
+- **Privacy Policy** - Comprehensive privacy policy for data handling
 
-## Tech Stack
+## 🛠 Tech Stack
 
 - **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **PWA**: next-pwa
-- **Deployment**: Cloudflare Pages
+- **Database**: Supabase (PostgreSQL)
+- **AI Integration**: OpenAI GPT-4o-mini
+- **Email**: Gmail API with OAuth2
+- **Deployment**: Vercel-ready (also supports Netlify, Railway, AWS, Cloudflare)
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
 - Node.js 18+ 
 - npm or yarn
+- Supabase account (for database features)
+- OpenAI API key (for chat assistant)
+- Gmail OAuth credentials (for contact form)
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd profile
+git clone https://github.com/steven-d-pennington/pennington-portfolio.git
+cd pennington-portfolio
 ```
 
 2. Install dependencies:
@@ -46,14 +55,64 @@ cd profile
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your credentials:
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+
+# Gmail API Configuration
+GMAIL_USER_EMAIL=your_gmail_email
+GMAIL_CLIENT_ID=your_gmail_client_id
+GMAIL_CLIENT_SECRET=your_gmail_client_secret
+GMAIL_REFRESH_TOKEN=your_gmail_refresh_token
+```
+
+4. Set up the database (see [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) for detailed instructions)
+
+5. Run the development server:
 ```bash
 npm run dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Customization
+## 🔧 Configuration
+
+### Environment Variables
+
+The application requires several environment variables for full functionality:
+
+#### Required for Chat Feature
+- `OPENAI_API_KEY` - Your OpenAI API key for the chat assistant
+
+#### Required for Contact Form  
+- `GMAIL_USER_EMAIL` - Your Gmail address for sending emails
+- `GMAIL_CLIENT_ID` - Google OAuth2 client ID
+- `GMAIL_CLIENT_SECRET` - Google OAuth2 client secret  
+- `GMAIL_REFRESH_TOKEN` - Google OAuth2 refresh token
+
+#### Required for Database Features
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+
+### Setup Guides
+
+- **Database Setup**: See [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)
+- **Gmail API Setup**: Instructions in [LOCAL_TESTING.md](./LOCAL_TESTING.md)
+- **Deployment**: See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+
+## 🎨 Customization
 
 ### Personal Information
 
@@ -67,104 +126,68 @@ Update the following files with your information:
 - `src/app/portfolio/page.tsx` - Add your actual projects
 - `src/app/services/page.tsx` - Update services and pricing
 - `src/app/contact/page.tsx` - Update contact information
+- `src/app/api/chat/route.ts` - Customize the AI assistant's system prompt
 
-### PWA Configuration
+### AI Chat Assistant
 
-Update the PWA manifest in `public/manifest.json`:
-- Update app name and description
-- Add your own icons (replace placeholder icons)
-- Update theme colors
+The chat assistant is configured as a cloud engineering specialist. To customize:
 
-### Icons
+1. Edit the `CLOUD_ENGINEER_SYSTEM_PROMPT` in `src/app/api/chat/route.ts`
+2. Modify the expertise areas and guidelines
+3. Adjust the OpenAI model parameters (temperature, max_tokens, etc.)
 
-Replace the placeholder icons in the `public/` directory with your own:
-- `icon-72x72.png`
-- `icon-96x96.png`
-- `icon-128x128.png`
-- `icon-144x144.png`
-- `icon-152x152.png`
-- `icon-192x192.png`
-- `icon-384x384.png`
-- `icon-512x512.png`
+### Contact Form
 
-## Deployment
+The contact form includes:
+- Basic contact information
+- Project details (type, budget, timeline)
+- Automatic email responses via Gmail API
+- Database storage in Supabase
 
-### Cloudflare Pages
-
-1. Push your code to a GitHub repository
-2. Go to [Cloudflare Pages](https://pages.cloudflare.com/)
-3. Create a new project and connect your repository
-4. Configure build settings:
-   - **Build command**: `npm run build`
-   - **Build output directory**: `out`
-   - **Node.js version**: 18 or higher
+## 📦 Available Scripts
 
 ### Environment Variables
 
-For basic functionality, no environment variables are required. For production with contact form functionality, you'll need to set up:
+## 📦 Available Scripts
 
-#### Supabase Configuration (for contact form)
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-
-#### Other Optional Variables
-- `NEXT_PUBLIC_SITE_URL` - Your site URL
-- `NEXT_PUBLIC_GA_ID` - Google Analytics ID (if using)
-
-Copy `.env.example` to `.env.local` for local development and configure your environment variables.
-
-### Database Setup for Contact Form
-
-This project uses Supabase as a backend database for storing contact form submissions. To set it up:
-
-1. Create a free account at [Supabase](https://supabase.com/)
-2. Create a new project
-3. In the SQL Editor, run the following SQL to create the contact_requests table:
-
-```sql
-CREATE TABLE contact_requests (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  company TEXT,
-  project_type TEXT,
-  budget TEXT,
-  timeline TEXT,
-  description TEXT NOT NULL,
-  message TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  status TEXT DEFAULT 'new'
-);
-
--- Create a policy to allow inserts from the client
-CREATE POLICY "Allow anonymous contact submissions" 
-  ON contact_requests 
-  FOR INSERT 
-  TO anon 
-  WITH CHECK (true);
-
--- Enable RLS
-ALTER TABLE contact_requests ENABLE ROW LEVEL SECURITY;
-```
-
-4. Get your Supabase URL and anon key from the project settings
-5. Add these values to your environment variables
-
-### Build Commands
-
-- `npm run dev` - Development server
+- `npm run dev` - Development server with Turbopack
 - `npm run build` - Production build
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- `npm run dev:host` - Development server accessible on network
+- `npm run test:supabase` - Test Supabase connection
 
-## Project Structure
+## 🚀 Deployment
+
+For detailed deployment instructions, see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md).
+
+### Quick Deploy to Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com) and import your repository
+3. Add environment variables in Vercel dashboard
+4. Deploy automatically on every push to main
+
+### Other Deployment Options
+
+- **Netlify**: Full-stack deployment with serverless functions
+- **Railway**: Container-based deployment with database
+- **AWS**: Using provided CloudFormation templates
+
+## 📁 Project Structure
 
 ```
 src/
 ├── app/                    # Next.js App Router pages
 │   ├── about/             # About page
-│   ├── contact/           # Contact page
+│   ├── api/               # API routes
+│   │   ├── chat/          # AI chat assistant endpoint
+│   │   ├── contact/       # Contact form endpoint
+│   │   └── health/        # Health check endpoint
+│   ├── chat/              # Chat interface page
+│   ├── contact/           # Contact page with form
 │   ├── portfolio/         # Portfolio page
+│   ├── privacy-policy/    # Privacy policy page
 │   ├── services/          # Services page
 │   ├── globals.css        # Global styles
 │   ├── layout.tsx         # Root layout
@@ -172,22 +195,66 @@ src/
 ├── components/            # Reusable components
 │   ├── Navigation.tsx     # Navigation component
 │   └── Footer.tsx         # Footer component
+└── utils/                 # Utility functions
+    └── supabase.ts        # Supabase client and helpers
 public/
 ├── manifest.json          # PWA manifest
-└── icons/                # PWA icons
+├── vercel.json           # Vercel deployment config
+└── icons/                # App icons and images
+aws/                      # AWS deployment scripts
+├── deploy.ps1            # PowerShell deployment script
+├── deploy.sh             # Bash deployment script
+└── cloudformation/       # AWS CloudFormation templates
+docs/                     # Documentation
+├── SUPABASE_SETUP.md     # Database setup guide
+├── LOCAL_TESTING.md      # Local development guide
+└── DEPLOYMENT_GUIDE.md   # Deployment instructions
 ```
 
-## Contributing
+## 🔗 API Endpoints
+
+- `GET /api/health` - Health check endpoint
+- `POST /api/chat` - AI chat assistant
+- `POST /api/contact` - Contact form submission
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Submit a pull request
+4. Commit your changes (`git commit -m 'Add some amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
 
-## License
+## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
 
-## Support
+## 🆘 Support
 
-For questions or support, please contact me through the contact form on the website.
+For questions or support:
+- Open an issue on GitHub
+- Contact through the website's contact form
+- Email: steve-d-pennington@gmail.com
+
+## 🔒 Privacy & Security
+
+This application collects and stores:
+- Contact form submissions in Supabase database
+- Chat conversations (if persistence is enabled)
+- Basic usage analytics
+
+All data is handled according to our [Privacy Policy](./src/app/privacy-policy/page.tsx).
+
+## 🔧 Development Notes
+
+### Testing
+
+- `npm run test:supabase` - Test database connection
+- Local testing guide: [LOCAL_TESTING.md](./LOCAL_TESTING.md)
+
+### Environment Setup
+
+- Development: `.env.local`
+- Production: Set environment variables in your deployment platform
+- See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for platform-specific instructions

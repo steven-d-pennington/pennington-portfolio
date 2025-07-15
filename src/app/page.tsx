@@ -2,31 +2,31 @@ import Link from 'next/link';
 
 export default function Home() {
   const skills = [
-    { name: 'Node.js', icon: '🟢' },
-    { name: 'JavaScript', icon: '📜' },
-    { name: 'ColdFusion', icon: '❄️' },
-    { name: 'AWS', icon: '☁️' },
-    { name: 'DevOps', icon: '⚙️' },
-    { name: 'Python', icon: '🐍' },
+    { name: 'React/Next.js', icon: '⚛️' },
+    { name: 'Node.js', icon: '�' },
+    { name: 'TypeScript', icon: '📘' },
+    { name: 'AWS Cloud', icon: '☁️' },
+    { name: 'Docker', icon: '🐳' },
+    { name: 'PostgreSQL', icon: '�' },
   ];
 
   const featuredProjects = [
     {
-      title: 'Oregon Employment Division',
-      description: 'ColdFusion Developer - Increased claim processing speed from a full day to just seconds',
-      tech: ['ColdFusion', 'SQL', 'Performance Optimization'],
+      title: 'E-Commerce Platform Migration',
+      description: 'Migrated legacy e-commerce platform to modern microservices architecture on AWS, improving performance by 300% and reducing infrastructure costs by 60%',
+      tech: ['AWS', 'Microservices', 'Node.js', 'PostgreSQL'],
       image: '/api/placeholder/400/250'
     },
     {
-      title: 'NetWORLD Connections',
-      description: 'Founder, Developer & Systems Engineer - Built entire ISP from ground up including billing, email portal, and city-wide wireless network',
-      tech: ['Full Stack', 'Billing Systems', 'Network Infrastructure'],
+      title: 'Healthcare SaaS Modernization',
+      description: 'Modernized monolithic healthcare application into scalable cloud-native solution, serving 100,000+ users with 99.9% uptime',
+      tech: ['React', 'Node.js', 'AWS Lambda', 'DynamoDB'],
       image: '/api/placeholder/400/250'
     },
     {
-      title: 'Extended Care Professional LLC',
-      description: 'Senior Software Engineer - Led AWS migration and developed SaaS platform features, becoming 2nd leading provider in long-term care software',
-      tech: ['AWS', 'SaaS', 'Node.js', 'Cloud Migration'],
+      title: 'Real-time Analytics Dashboard',
+      description: 'Built real-time data visualization platform with custom reporting and automated insights for enterprise clients',
+      tech: ['Next.js', 'Python', 'Redis', 'Chart.js'],
       image: '/api/placeholder/400/250'
     }
   ];
@@ -38,27 +38,28 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Hi, I&#39;m Steven Pennington
+              Welcome to Monkey LoveStack
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Senior Software Engineer / AWS Cloud Architect
+              Full-Stack Development & Cloud Solutions
             </p>
             <p className="text-lg md:text-xl mb-12 text-blue-200 max-w-3xl mx-auto">
-              I&#39;m a passionate technologist with extensive experience building, scaling, and securing cloud-native applications. 
-              My expertise spans backend development, DevOps, cloud architecture, and SaaS solutions for organizations of all sizes.
+              We&apos;re a passionate team of technologists specializing in bringing ideas to life on the web. 
+              Our expertise spans full-stack development, cloud migrations, and modernizing monolithic applications. 
+              We build applications and handle deployment to any cloud provider or on-premises infrastructure.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
-                href="/portfolio" 
+                href="/projects" 
                 className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
-                View My Work
+                View Our Work
               </Link>
               <Link 
                 href="/contact" 
                 className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
               >
-                Get In Touch
+                Start Your Project
               </Link>
             </div>
           </div>
@@ -70,10 +71,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Technologies I Work With
+              Technologies We Master
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              I stay current with modern development practices and tools to deliver the best solutions.
+              We stay current with modern development practices and tools to deliver cutting-edge solutions.
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
@@ -94,10 +95,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Career Highlights
+              Client Success Stories
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Here are some of my most significant career achievements that showcase my skills and approach to problem-solving.
+              Here are some of our most impactful projects that showcase our expertise in full-stack development and cloud modernization.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -129,7 +130,7 @@ export default function Home() {
           </div>
           <div className="text-center mt-12">
             <Link 
-              href="/portfolio" 
+              href="/projects" 
               className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
               View All Projects
@@ -142,10 +143,10 @@ export default function Home() {
       <section className="py-20 bg-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Start Your Next Project?
+            Ready to Transform Your Application?
           </h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-            Let&#39;s discuss how I can help bring your ideas to life with modern, scalable solutions.
+            Let&apos;s discuss how we can help bring your ideas to life with modern, scalable solutions and seamless cloud deployment.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
@@ -158,7 +159,7 @@ export default function Home() {
               href="/services" 
               className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
             >
-              View Services
+              Our Services
             </Link>
           </div>
         </div>

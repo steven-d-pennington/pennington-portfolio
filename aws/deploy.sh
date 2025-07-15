@@ -14,6 +14,15 @@ ECR_STACK_NAME="pennington-portfolio-ecr-${ENVIRONMENT}"
 DOMAIN_NAME=${3:-portfolio.stevenpennington.com}
 CERTIFICATE_ARN=${4:-""}
 
+# API Integration Parameters (should be set as environment variables)
+OPENAI_API_KEY=${OPENAI_API_KEY:-""}
+SUPABASE_URL=${SUPABASE_URL:-""}
+SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-""}
+GMAIL_USER_EMAIL=${GMAIL_USER_EMAIL:-""}
+GMAIL_CLIENT_ID=${GMAIL_CLIENT_ID:-""}
+GMAIL_CLIENT_SECRET=${GMAIL_CLIENT_SECRET:-""}
+GMAIL_REFRESH_TOKEN=${GMAIL_REFRESH_TOKEN:-""}
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -167,6 +176,13 @@ deploy_application() {
             VpcId=$VPC_ID \
             PublicSubnets="$PUBLIC_SUBNET_LIST" \
             PrivateSubnets="$PRIVATE_SUBNET_LIST" \
+            OpenAIApiKey=$OPENAI_API_KEY \
+            SupabaseUrl=$SUPABASE_URL \
+            SupabaseAnonKey=$SUPABASE_ANON_KEY \
+            GmailUserEmail=$GMAIL_USER_EMAIL \
+            GmailClientId=$GMAIL_CLIENT_ID \
+            GmailClientSecret=$GMAIL_CLIENT_SECRET \
+            GmailRefreshToken=$GMAIL_REFRESH_TOKEN \
         --capabilities CAPABILITY_IAM \
         --region $REGION
     

@@ -5,7 +5,14 @@ param(
     [string]$Environment = "production",
     [string]$Region = "us-east-1",
     [string]$DomainName = "portfolio.stevenpennington.com",
-    [string]$CertificateArn = ""
+    [string]$CertificateArn = "",
+    [string]$OpenAIApiKey = "",
+    [string]$SupabaseUrl = "",
+    [string]$SupabaseAnonKey = "",
+    [string]$GmailUserEmail = "",
+    [string]$GmailClientId = "",
+    [string]$GmailClientSecret = "",
+    [string]$GmailRefreshToken = ""
 )
 
 # Configuration
@@ -189,6 +196,13 @@ function Deploy-Application {
             VpcId=$VpcId `
             PublicSubnets="$PublicSubnetList" `
             PrivateSubnets="$PrivateSubnetList" `
+            OpenAIApiKey=$OpenAIApiKey `
+            SupabaseUrl=$SupabaseUrl `
+            SupabaseAnonKey=$SupabaseAnonKey `
+            GmailUserEmail=$GmailUserEmail `
+            GmailClientId=$GmailClientId `
+            GmailClientSecret=$GmailClientSecret `
+            GmailRefreshToken=$GmailRefreshToken `
         --capabilities CAPABILITY_IAM `
         --region $Region
     
