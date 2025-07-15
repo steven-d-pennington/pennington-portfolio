@@ -15,7 +15,6 @@ export default function Navigation() {
     { name: 'Projects', href: '/projects' },
     { name: 'Services', href: '/services' },
     { name: 'Contact', href: '/contact' },
-    { name: 'Chat', href: '/chat' },
   ];
 
   const isActive = (href: string) => pathname === href;
