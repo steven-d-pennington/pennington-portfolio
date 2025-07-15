@@ -232,7 +232,7 @@ export default function Services() {
             Ready to Get Started?
           </h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-            Let's discuss your project requirements and find the perfect solution for your needs.
+            Let&apos;s discuss your project requirements and find the perfect solution for your needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 

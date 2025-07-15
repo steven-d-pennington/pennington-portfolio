@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 export default function Projects() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -223,7 +221,7 @@ export default function Projects() {
             Ready to bring your ideas to life?
           </h2>
           <p className="text-xl text-gray-300 mb-8">
-            Let's discuss how we can help modernize your applications and infrastructure.
+            Let&apos;s discuss how we can help modernize your applications and infrastructure.
           </p>
           <a 
             href="/contact" 

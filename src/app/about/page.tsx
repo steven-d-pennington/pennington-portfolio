@@ -18,26 +18,7 @@ export default function About() {
     }
   ];
 
-  const experience = [
-    {
-      year: 'Current',
-      title: 'Senior Software Engineer',
-      company: 'Extended Care Professional LLC',
-      description: 'Led the migration to AWS and developed new features for our SaaS platform, helping us become the second-leading provider in our industry for long-term care software.'
-    },
-    {
-      year: 'Previous',
-      title: 'Founder, Developer & Systems Engineer',
-      company: 'NetWORLD Connections',
-      description: 'Built an entire internet service provider from the ground up including all accounting, customer billing, a software repository, and one of the first web-based email portals. Became the 2nd leading provider in Salt Lake City, UT, and deployed a city-wide wireless network.'
-    },
-    {
-      year: 'Previous',
-      title: 'ColdFusion Developer',
-      company: 'Oregon Employment Division',
-      description: 'Helped increase claim processing speed from a full day to just seconds.'
-    }
-  ];
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,7 +30,7 @@ export default function About() {
               About Monkey LoveStack
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We're a passionate team of technologists specializing in bringing ideas to life on the web. 
+              We&apos;re a passionate team of technologists specializing in bringing ideas to life on the web. 
               Our expertise spans full-stack development, cloud migrations, and modernizing monolithic applications. 
               We build applications and handle deployment to any cloud provider or on-premises infrastructure.
             </p>
@@ -68,16 +49,16 @@ export default function About() {
               <div className="space-y-4 text-gray-600">
                 <p>
                   Monkey LoveStack was founded with a passion for technology and a drive to solve complex problems. 
-                  Our journey has been defined by pushing the boundaries of what's possible, from modernizing legacy systems 
+                  Our journey has been defined by pushing the boundaries of what&apos;s possible, from modernizing legacy systems 
                   to building cutting-edge applications from the ground up.
                 </p>
                 <p>
-                  We specialize in taking ideas and bringing them to life on the web. Whether it's migrating a monolithic 
+                  We specialize in taking ideas and bringing them to life on the web. Whether it&apos;s migrating a monolithic 
                   application to modern microservices, building a brand new SaaS platform, or deploying to any cloud provider, 
                   our team has the expertise to handle every aspect of the development lifecycle.
                 </p>
                 <p>
-                  Our approach combines deep technical knowledge with a focus on understanding our clients' unique needs. 
+                  Our approach combines deep technical knowledge with a focus on understanding our clients&apos; unique needs. 
                   We stay current with the latest technologies and best practices, ensuring that every solution we deliver 
                   is modern, scalable, and built to last.
                 </p>

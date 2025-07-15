@@ -44,7 +44,7 @@ export default function Home() {
               Full-Stack Development & Cloud Solutions
             </p>
             <p className="text-lg md:text-xl mb-12 text-blue-200 max-w-3xl mx-auto">
-              We're a passionate team of technologists specializing in bringing ideas to life on the web. 
+              We&apos;re a passionate team of technologists specializing in bringing ideas to life on the web. 
               Our expertise spans full-stack development, cloud migrations, and modernizing monolithic applications. 
               We build applications and handle deployment to any cloud provider or on-premises infrastructure.
             </p>
@@ -146,7 +146,7 @@ export default function Home() {
             Ready to Transform Your Application?
           </h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-            Let's discuss how we can help bring your ideas to life with modern, scalable solutions and seamless cloud deployment.
+            Let&apos;s discuss how we can help bring your ideas to life with modern, scalable solutions and seamless cloud deployment.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
