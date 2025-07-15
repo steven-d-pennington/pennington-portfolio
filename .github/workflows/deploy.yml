@@ -2,12 +2,16 @@ name: Deploy to Vercel
 
 on:
   push:
-    branches: [ main, adding-gmail ]
+    branches: [ main, layout-updates ]
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  deployments: write
+
 jobs:
-  deploy:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,7 +26,48 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Deploy to Vercel
+      - name: Build application
+        run: npm run build
+        env:
+          # Required for build (using dummy values for security)
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy-key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'dummy-key' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'dummy-key' }}
+          GMAIL_USER_EMAIL: ${{ secrets.GMAIL_USER_EMAIL || 'dummy@example.com' }}
+          GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID || 'dummy-id' }}
+          GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET || 'dummy-secret' }}
+          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN || 'dummy-token' }}
+
+      - name: Run linting
+        run: npm run lint
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+
+  deploy-preview:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel (Preview)
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}

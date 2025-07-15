@@ -48,10 +48,41 @@ Parameters:
   
   DesiredCount:
     Type: Number
-    Default: 2
-    MinValue: 1
-    MaxValue: 10
-    Description: Desired number of tasks
+    Default: 1
+    Description: Number of desired ECS tasks
+    
+  # API Integration Parameters
+  OpenAIApiKey:
+    Type: String
+    NoEcho: true
+    Description: OpenAI API key for chat functionality
+    
+  SupabaseUrl:
+    Type: String
+    Description: Supabase project URL
+    
+  SupabaseAnonKey:
+    Type: String
+    NoEcho: true
+    Description: Supabase anonymous key
+    
+  GmailUserEmail:
+    Type: String
+    Description: Gmail user email for contact form
+    
+  GmailClientId:
+    Type: String
+    Description: Gmail OAuth2 client ID
+    
+  GmailClientSecret:
+    Type: String
+    NoEcho: true
+    Description: Gmail OAuth2 client secret
+    
+  GmailRefreshToken:
+    Type: String
+    NoEcho: true
+    Description: Gmail OAuth2 refresh token
   
   MaxCount:
     Type: Number
@@ -104,6 +135,20 @@ Resources:
               Value: !Ref Environment
             - Name: PORT
               Value: !Ref ContainerPort
+            - Name: OPENAI_API_KEY
+              Value: !Ref OpenAIApiKey
+            - Name: NEXT_PUBLIC_SUPABASE_URL
+              Value: !Ref SupabaseUrl
+            - Name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+              Value: !Ref SupabaseAnonKey
+            - Name: GMAIL_USER_EMAIL
+              Value: !Ref GmailUserEmail
+            - Name: GMAIL_CLIENT_ID
+              Value: !Ref GmailClientId
+            - Name: GMAIL_CLIENT_SECRET
+              Value: !Ref GmailClientSecret
+            - Name: GMAIL_REFRESH_TOKEN
+              Value: !Ref GmailRefreshToken
           LogConfiguration:
             LogDriver: awslogs
             Options:
