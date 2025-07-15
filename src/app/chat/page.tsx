@@ -43,7 +43,7 @@ export default function ChatPage() {
     if (initialMessages.length === 0) {
       const welcomeMessage: Message = {
         role: 'assistant',
-        content: "Hi! I'm your Cloud Engineering Assistant. I can help with AWS, Azure, GCP, DevOps, containerization, infrastructure, and other technical topics. How can I help you today?",
+        content: "Hi! I'm your Monkey LoveStack assistant. I can help with full-stack development, cloud architecture, AWS, Azure, GCP, DevOps, containerization, infrastructure, and other technical topics. How can I help you today?",
         timestamp: Date.now()
       };
       initialMessages = [welcomeMessage];
@@ -135,7 +135,7 @@ export default function ChatPage() {
   const clearChat = () => {
     const welcomeMessage: Message = {
       role: 'assistant',
-      content: "Hi! I'm your Cloud Engineering Assistant. I can help with AWS, Azure, GCP, DevOps, containerization, infrastructure, and other technical topics. How can I help you today?",
+      content: "Hi! I'm your Monkey LoveStack assistant. I can help with full-stack development, cloud architecture, AWS, Azure, GCP, DevOps, containerization, infrastructure, and other technical topics. How can I help you today?",
       timestamp: Date.now()
     };
     setMessages([welcomeMessage]);
@@ -147,8 +147,8 @@ export default function ChatPage() {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-          <h1 className="text-3xl font-bold mb-2">Cloud Engineering Assistant</h1>
-          <p className="text-blue-100">Get expert help with cloud infrastructure, DevOps, and technical solutions</p>
+          <h1 className="text-3xl font-bold mb-2">Monkey LoveStack Assistant</h1>
+          <p className="text-blue-100">Get expert help with full-stack development, cloud infrastructure, and technical solutions</p>
         </div>
 
         {/* Settings */}
@@ -205,7 +205,7 @@ export default function ChatPage() {
             <div className="flex justify-start">
               <div className="bg-gray-100 text-gray-800 rounded-2xl px-4 py-2 shadow-sm">
                 <div className="flex items-center space-x-1">
-                  <span className="text-sm">Cloud Engineer is typing</span>
+                  <span className="text-sm">Monkey LoveStack assistant is typing</span>
                   <div className="flex space-x-1">
                     <div className="w-1 h-1 bg-gray-500 rounded-full animate-bounce"></div>
                     <div className="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
@@ -235,7 +235,7 @@ export default function ChatPage() {
           <form onSubmit={sendMessage} className="flex gap-3">
             <input
               type="text"
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
               placeholder="Ask about cloud architecture, DevOps, infrastructure..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
