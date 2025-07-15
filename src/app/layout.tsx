@@ -7,10 +7,10 @@ import Footer from "@/components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Steven Pennington | Senior Software Engineer / AWS Cloud Architect",
-  description: "Senior Software Engineer and AWS Cloud Architect with extensive experience building, scaling, and securing cloud-native applications. Expert in backend development, DevOps, and SaaS solutions.",
-  keywords: "senior software engineer, AWS cloud architect, backend development, DevOps, SaaS, Node.js, JavaScript, ColdFusion, cloud-native applications",
-  authors: [{ name: "Steven Pennington" }],
+  title: "Monkey LoveStack | Full-Stack Development & Cloud Solutions",
+  description: "Full-stack development company specializing in bringing ideas to life on the web. We build modern applications and handle deployment to any cloud provider or on-premises infrastructure. Experts in cloud migrations and modernizing monolithic applications.",
+  keywords: "full-stack development, cloud migration, application modernization, web development, cloud deployment, AWS, Azure, Google Cloud, monolithic to microservices",
+  authors: [{ name: "Monkey LoveStack" }],
   manifest: "/manifest.json",
 };
 

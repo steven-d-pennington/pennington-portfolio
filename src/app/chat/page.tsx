@@ -15,6 +15,7 @@ export default function ChatPage() {
   const [persistChat, setPersistChat] = useState(false);
   const [rememberSession, setRememberSession] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load session data on mount
@@ -58,10 +59,13 @@ export default function ChatPage() {
     }
   }, [messages, rememberSession]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom only when needed
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    if (shouldAutoScroll || isTyping) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setShouldAutoScroll(false);
+    }
+  }, [messages, isTyping, shouldAutoScroll]);
 
   // Handle checkbox changes
   const handleRememberSessionChange = (checked: boolean) => {
@@ -92,6 +96,7 @@ export default function ChatPage() {
     };
     
     setMessages((msgs) => [...msgs, userMessage]);
+    setShouldAutoScroll(true);
     const messageToSend = input.trim();
     setInput("");
 
@@ -115,6 +120,7 @@ export default function ChatPage() {
           timestamp: Date.now()
         };
         setMessages((msgs) => [...msgs, assistantMessage]);
+        setShouldAutoScroll(true);
       } else {
         setError(data.error || "Unknown error");
       }
