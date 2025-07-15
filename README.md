@@ -10,7 +10,7 @@ A modern, professional portfolio website built with Next.js, TypeScript, and Tai
 - 💾 **Database Integration** - Supabase PostgreSQL for contact forms and chat persistence
 - 📱 **Mobile First** - Fully responsive design for all devices
 - 🚀 **Fast Performance** - Optimized for speed and SEO
-- ☁️ **Multi-Platform Deploy** - Ready for Vercel, Netlify, Railway, AWS, or Cloudflare
+- ☁️ **Multi-Platform Deploy** - Ready for Vercel, Netlify, Railway, or AWS
 
 ## 📋 Pages & Features
 
@@ -30,7 +30,7 @@ A modern, professional portfolio website built with Next.js, TypeScript, and Tai
 - **Database**: Supabase (PostgreSQL)
 - **AI Integration**: OpenAI GPT-4o-mini
 - **Email**: Gmail API with OAuth2
-- **Deployment**: Vercel-ready (also supports Netlify, Railway, AWS, Cloudflare)
+- **Deployment**: Vercel-ready (also supports Netlify, Railway, AWS)
 
 ## 🚀 Getting Started
 
