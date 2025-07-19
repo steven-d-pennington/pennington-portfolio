@@ -104,7 +104,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
-                href="/projects" 
+                href="/case-studies" 
                 className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
                 View Our Work
@@ -182,10 +182,10 @@ export default function Home() {
           </div>
           <div className="text-center mt-12">
             <Link 
-              href="/projects" 
+              href="/case-studies" 
               className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
-              View All Projects
+              View All Case Studies
             </Link>
           </div>
         </div>

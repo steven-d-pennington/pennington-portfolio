@@ -25,8 +25,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
-    if (savedTheme) {
+    // Only use saved theme if it exists, otherwise default to light
+    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
       setTheme(savedTheme);
+    } else {
+      // Ensure default is light theme
+      setTheme('light');
+      localStorage.setItem('theme', 'light');
     }
   }, []);
 
