@@ -22,7 +22,7 @@ export default function Navigation() {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 h-36 flex items-center overflow-visible">
+    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 h-24 flex items-center overflow-visible">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-between items-center h-full">
           <div className="flex-shrink-0 flex items-center">
