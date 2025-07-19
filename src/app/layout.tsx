@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import FloatingChat from "@/components/FloatingChat";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,15 +38,17 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-          <Navigation />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
-          <CookieConsent />
-          <FloatingChat />
-        </div>
+        <ThemeProvider>
+          <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
+            <Navigation />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
+            <CookieConsent />
+            <FloatingChat />
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

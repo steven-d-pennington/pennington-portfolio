@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { ThemeToggle } from './ThemeToggle';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,15 +13,16 @@ export default function Navigation() {
   const navItems = [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/about' },
-    { name: 'Projects', href: '/projects' },
+    // { name: 'Projects', href: '/projects' }, // Hidden for now
     { name: 'Services', href: '/services' },
+    { name: 'Case Studies', href: '/case-studies' },
     { name: 'Contact', href: '/contact' },
   ];
 
   const isActive = (href: string) => pathname === href;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 h-36 flex items-center overflow-visible">
+    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 h-24 flex items-center overflow-visible">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-between items-center h-full">
           <div className="flex-shrink-0 flex items-center">
@@ -58,10 +60,12 @@ export default function Navigation() {
                 {item.name}
               </Link>
             ))}
+            <ThemeToggle />
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          {/* Mobile menu button and theme toggle */}
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
