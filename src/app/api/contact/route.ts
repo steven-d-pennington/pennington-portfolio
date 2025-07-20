@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { submitContactRequest } from '@/utils/supabase';
+import { createSupabaseServer } from '@/utils/supabase-server';
 
 const GMAIL_USER_EMAIL = process.env.GMAIL_USER_EMAIL;
 const GMAIL_CLIENT_ID = process.env.GMAIL_CLIENT_ID;
@@ -57,6 +58,11 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Get authenticated user from session
+    const supabase = await createSupabaseServer();
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id || null;
     
     // Initialize results tracking
     let emailSent = false;
@@ -83,7 +89,7 @@ export async function POST(request: NextRequest) {
           message: formData.message?.substring(0, 50) + '...' // Truncate for logging
         });
         
-        const result = await submitContactRequest(formData);
+        const result = await submitContactRequest({ ...formData, userId });
         console.log('Supabase result:', result);
         
         if (result.success) {
