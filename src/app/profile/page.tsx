@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { useUser, useAuthActions } from '@/components/AuthProvider';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -36,7 +37,7 @@ function ProfilePage() {
       const { error } = await updateProfile(formData);
       
       if (error) {
-        setMessage({ type: 'error', text: error.message || 'Failed to update profile' });
+        setMessage({ type: 'error', text: typeof error === 'string' ? error : 'Failed to update profile' });
       } else {
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
         setIsEditing(false);
@@ -97,9 +98,11 @@ function ProfilePage() {
                   onClick={handleAvatarClick}
                 >
                   {formData.avatar_url ? (
-                    <img 
+                    <Image 
                       src={formData.avatar_url} 
                       alt="Avatar" 
+                      width={80}
+                      height={80}
                       className="w-20 h-20 rounded-full object-cover"
                     />
                   ) : (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { createSupabaseBrowser } from '@/utils/supabase';
 
@@ -19,11 +19,11 @@ type AuthContextType = {
   userProfile: UserProfile | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, options?: { data?: any }) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, options?: { data?: Record<string, unknown> }) => Promise<{ error: AuthError | null }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
-  updateProfile: (profile: Partial<UserProfile>) => Promise<{ error: any }>;
+  updateProfile: (profile: Partial<UserProfile>) => Promise<{ error: unknown }>;
   refreshSession: () => Promise<void>;
 };
 
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createSupabaseBrowser();
 
   // Fetch user profile from database
-  const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+  const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error fetching user profile:', error);
       return null;
     }
-  };
+  }, [supabase]);
 
   // Create user profile after successful signup
   const createUserProfile = async (user: User): Promise<void> => {
@@ -143,10 +143,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchUserProfile, supabase.auth]);
 
   // Authentication methods
-  const signUp = async (email: string, password: string, options?: { data?: any }) => {
+  const signUp = async (email: string, password: string, options?: { data?: Record<string, unknown> }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -171,8 +171,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (!error) {
+        // Clear user state immediately on successful sign out
+        setUser(null);
+        setUserProfile(null);
+        setSession(null);
+      }
+      return { error };
+    } catch (err) {
+      console.error('Error signing out:', err);
+      return { error: err as AuthError };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetPassword = async (email: string) => {

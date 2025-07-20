@@ -19,7 +19,20 @@ export default function Navigation() {
   const { signOut } = useAuthActions();
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      const { error } = await signOut();
+      if (!error) {
+        // Redirect to home page after successful sign out
+        window.location.href = '/?auth_success=signed_out';
+      } else {
+        console.error('Sign out error:', error);
+        // Show error to user via URL params for AuthErrorHandler
+        window.location.href = '/?auth_error=server_error&message=Failed to sign out. Please try again.';
+      }
+    } catch (err) {
+      console.error('Unexpected sign out error:', err);
+      window.location.href = '/?auth_error=server_error&message=An unexpected error occurred during sign out.';
+    }
     setIsUserMenuOpen(false);
   };
 

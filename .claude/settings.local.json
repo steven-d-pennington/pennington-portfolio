@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run test:supabase:*)",
+      "Bash(supabase:*)",
+      "Bash(node:*)",
+      "Bash(cp:*)",
+      "Bash(code supabase-auth-setup.sql)",
+      "Bash(cat:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)"
+    ],
+    "deny": []
+  }
+}

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserClient, createServerClient } from '@supabase/ssr';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-url.supabase.co';
@@ -26,7 +27,7 @@ export function createSupabaseMiddleware(request: NextRequest) {
       get(name: string) {
         return request.cookies.get(name)?.value;
       },
-      set(name: string, value: string, options: any) {
+      set(name: string, value: string, options: Record<string, unknown>) {
         request.cookies.set({
           name,
           value,
@@ -43,7 +44,7 @@ export function createSupabaseMiddleware(request: NextRequest) {
           ...options,
         });
       },
-      remove(name: string, options: any) {
+      remove(name: string, options: Record<string, unknown>) {
         request.cookies.set({
           name,
           value: '',

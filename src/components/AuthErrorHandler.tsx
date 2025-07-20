@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Toast } from './Toast';
 
-export default function AuthErrorHandler() {
+function AuthErrorHandlerContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' | 'info' } | null>(null);
@@ -91,5 +91,13 @@ export default function AuthErrorHandler() {
       duration={7000} // Show longer for error messages
       onClose={closeToast}
     />
+  );
+}
+
+export default function AuthErrorHandler() {
+  return (
+    <Suspense fallback={null}>
+      <AuthErrorHandlerContent />
+    </Suspense>
   );
 }

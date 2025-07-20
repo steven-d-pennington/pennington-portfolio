@@ -220,7 +220,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
             {mode === 'login' && (
               <>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <button
                     type="button"
                     onClick={() => switchMode('signup')}

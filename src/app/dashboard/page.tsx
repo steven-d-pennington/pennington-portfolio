@@ -104,7 +104,7 @@ function DashboardPage() {
             Welcome back, {userProfile?.full_name || user?.email?.split('@')[0] || 'User'}!
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Here's an overview of your account and quick actions you can take.
+            Here&apos;s an overview of your account and quick actions you can take.
           </p>
         </div>
 
