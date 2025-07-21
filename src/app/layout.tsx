@@ -39,12 +39,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Steven Pennington" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} overflow-x-hidden`}>
         <ThemeProvider>
           <AuthProvider>
-            <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
+            <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col w-full overflow-x-hidden">
               <Navigation />
-              <main className="flex-grow">
+              <main className="flex-grow w-full overflow-x-hidden">
                 {children}
               </main>
               <Footer />
