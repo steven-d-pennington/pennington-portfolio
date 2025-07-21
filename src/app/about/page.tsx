@@ -64,9 +64,9 @@ export default function About() {
                 </p>
               </div>
             </div>
-            <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
+            {/* <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
               <span className="text-gray-500">Team Photo Placeholder</span>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

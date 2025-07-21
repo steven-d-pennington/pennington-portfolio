@@ -13,7 +13,15 @@
       "Bash(git checkout:*)",
       "Bash(git add:*)",
       "Bash(ls:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git merge-base:*)",
+      "Bash(rm:*)",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(git commit:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint)",
+      "Bash(mkdir:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": []
   }

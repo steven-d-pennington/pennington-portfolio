@@ -137,8 +137,17 @@ export default function Navigation() {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      Dashboard
+                      Account Dashboard
                     </Link>
+                    {userProfile?.role && ['client', 'admin', 'team_member'].includes(userProfile.role) && (
+                      <Link
+                        href="/dashboard/projects"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        Project Dashboard
+                      </Link>
+                    )}
                     <button
                       onClick={handleSignOut}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
