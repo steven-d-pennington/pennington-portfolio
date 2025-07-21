@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   const skills = [
@@ -69,19 +70,19 @@ export default function Home() {
       title: 'E-Commerce Platform Migration',
       description: 'Migrated legacy e-commerce platform to modern microservices architecture on AWS, improving performance by 300% and reducing infrastructure costs by 60%',
       tech: ['AWS', 'Microservices', 'Node.js', 'PostgreSQL'],
-      image: '/api/placeholder/400/250'
+      image: '/ecom-migration.png'
     },
     {
       title: 'Healthcare SaaS Modernization',
       description: 'Modernized monolithic healthcare application into scalable cloud-native solution, serving 100,000+ users with 99.9% uptime',
       tech: ['React', 'Node.js', 'AWS Lambda', 'DynamoDB'],
-      image: '/api/placeholder/400/250'
+      image: '/ecp.png'
     },
     {
       title: 'Real-time Analytics Dashboard',
       description: 'Built real-time data visualization platform with custom reporting and automated insights for enterprise clients',
       tech: ['Next.js', 'Python', 'Redis', 'Chart.js'],
-      image: '/api/placeholder/400/250'
+      image: '/analytics.png'
     }
   ];
 
@@ -156,8 +157,14 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredProjects.map((project, index) => (
               <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-48 bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500">Project Image</span>
+                <div className="h-48 bg-gray-200 overflow-hidden relative">
+                  <Image 
+                    src={project.image} 
+                    alt={project.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
