@@ -46,6 +46,7 @@ export default function Navigation() {
     { name: 'About', href: '/about' },
     { name: 'Services', href: '/services' },
     { name: 'Case Studies', href: '/case-studies' },
+    { name: 'Technologies', href: '/technologies' },
     { name: 'Contact', href: '/contact' },
   ];
 

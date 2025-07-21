@@ -25,6 +25,7 @@ type AuthContextType = {
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<{ error: unknown }>;
   refreshSession: () => Promise<void>;
+  signInWithGoogle: () => Promise<{ error: AuthError | null }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase]);
 
   // Create user profile after successful signup
-  const createUserProfile = async (user: User): Promise<void> => {
+  const createUserProfile = useCallback(async (user: User): Promise<void> => {
     try {
       const { error } = await supabase
         .from('user_profiles')
@@ -89,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error creating user profile:', error);
     }
-  };
+  }, [supabase]);
 
   // Initialize auth state
   useEffect(() => {
@@ -130,7 +131,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           // Fetch user profile
-          const profile = await fetchUserProfile(session.user.id);
+          let profile = await fetchUserProfile(session.user.id);
+          if (!profile) {
+            // If profile doesn't exist, create it (e.g., for OAuth sign-ins)
+            await createUserProfile(session.user);
+            profile = await fetchUserProfile(session.user.id); // Fetch again after creation
+          }
           setUserProfile(profile);
         } else {
           setUserProfile(null);
@@ -143,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, supabase.auth]);
+  }, [fetchUserProfile, createUserProfile, supabase.auth]);
 
   // Authentication methods
   const signUp = async (email: string, password: string, options?: { data?: Record<string, unknown> }) => {
@@ -243,6 +249,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    return { error };
+  };
+
   const value: AuthContextType = {
     user,
     userProfile,
@@ -254,6 +270,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword,
     updateProfile,
     refreshSession,
+    signInWithGoogle,
   };
 
   return (
@@ -275,6 +292,6 @@ export function useSession() {
 }
 
 export function useAuthActions() {
-  const { signUp, signIn, signOut, resetPassword, updateProfile, refreshSession } = useAuth();
-  return { signUp, signIn, signOut, resetPassword, updateProfile, refreshSession };
+  const { signUp, signIn, signOut, resetPassword, updateProfile, refreshSession, signInWithGoogle } = useAuth();
+  return { signUp, signIn, signOut, resetPassword, updateProfile, refreshSession, signInWithGoogle };
 }
