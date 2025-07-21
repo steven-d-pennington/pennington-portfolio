@@ -8,7 +8,7 @@ export default function PortfolioPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Portfolio</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Explore our work, technologies, and client success stories. 
-            Discover how we've helped businesses transform their digital presence.
+            Discover how we&apos;ve helped businesses transform their digital presence.
           </p>
         </div>
 

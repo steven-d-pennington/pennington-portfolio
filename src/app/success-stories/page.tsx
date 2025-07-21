@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function SuccessStoriesPage() {
   const stories = [
     {
@@ -71,10 +73,12 @@ export default function SuccessStoriesPage() {
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-lg p-4">
-                  <img 
+                <div className="bg-white rounded-lg p-4 relative">
+                  <Image 
                     src={story.image} 
                     alt={story.title}
+                    width={400}
+                    height={256}
                     className="w-full h-64 object-contain rounded-lg"
                   />
                 </div>

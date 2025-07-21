@@ -47,8 +47,8 @@ export default function Navigation() {
   const primaryNavItems = navigationConfig.primary;
   const protectedNavItems = navigationConfig.protected || [];
   
-  // Combine nav items based on user authentication
-  const allNavItems = user ? [...primaryNavItems, ...protectedNavItems] : primaryNavItems;
+  // Combine nav items based on user authentication (used in mobile navigation)
+  // const allNavItems = user ? [...primaryNavItems, ...protectedNavItems] : primaryNavItems;
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href);
   

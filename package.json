@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --turbo",
+    "build": "next build --turbo",
+    "build:webpack": "next build",
     "start": "next start",
     "lint": "next lint",
-    "dev:host": "next dev -p 12000 -H 0.0.0.0",
+    "dev:host": "next dev --turbo -p 12000 -H 0.0.0.0",
     "test:supabase": "node test-supabase.js",
     "test:chat": "node test-chat-api.js"
   },
@@ -29,6 +30,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "imagemin": "^9.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "imagemin-webp": "^8.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
