@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { ThemeToggle } from './ThemeToggle';
 import { useUser, useAuthActions } from './AuthProvider';
 import AuthModal from './AuthModal';
+import SecondaryNavigation from './SecondaryNavigation';
+import { navigationConfig, NavigationCategory } from '@/types/navigation';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -41,23 +43,32 @@ export default function Navigation() {
     setAuthModalOpen(true);
   };
 
-  const publicNavItems = [
-    { name: 'Home', href: '/' },
-    { name: 'About', href: '/about' },
-    { name: 'Services', href: '/services' },
-    { name: 'Case Studies', href: '/case-studies' },
-    { name: 'Technologies', href: '/technologies' },
-    { name: 'Contact', href: '/contact' },
-  ];
+  // Get navigation items from config
+  const primaryNavItems = navigationConfig.primary;
+  const protectedNavItems = navigationConfig.protected || [];
+  
+  // Combine nav items based on user authentication
+  const allNavItems = user ? [...primaryNavItems, ...protectedNavItems] : primaryNavItems;
 
-  const protectedNavItems = [
-    { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Profile', href: '/profile' },
-  ];
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href);
+  
+  // Find current category for secondary navigation
+  const getCurrentCategory = (): NavigationCategory | null => {
+    return primaryNavItems.find(category => {
+      if (!category.children || category.children.length === 0) return false;
+      
+      // Check if current path matches category or any of its children
+      if (pathname === category.href) return true;
+      if (pathname.startsWith(category.href + '/')) return true;
+      
+      // Check if current path matches any child routes
+      return category.children.some(child => 
+        pathname === child.href || pathname.startsWith(child.href + '/')
+      );
+    }) || null;
+  };
 
-  const navItems = user ? [...publicNavItems, ...protectedNavItems] : publicNavItems;
-
-  const isActive = (href: string) => pathname === href;
+  const currentCategory = getCurrentCategory();
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 relative w-full">
@@ -85,7 +96,7 @@ export default function Navigation() {
           
           {/* Desktop Navigation */}
           <div className="hidden xl:flex items-center space-x-8">
-            {navItems.map((item) => (
+            {primaryNavItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -98,6 +109,22 @@ export default function Navigation() {
                 {item.name}
               </Link>
             ))}
+            
+            {/* Protected items for authenticated users */}
+            {user && protectedNavItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive(item.href)
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+            
             <ThemeToggle />
             
             {/* Authentication Section */}
@@ -193,7 +220,45 @@ export default function Navigation() {
       {isMenuOpen && (
         <div className="xl:hidden absolute top-full left-0 w-full bg-white border-t border-gray-200 shadow-lg z-40">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navItems.map((item) => (
+            {/* Primary Navigation Items */}
+            {primaryNavItems.map((category) => (
+              <div key={category.name}>
+                <Link
+                  href={category.href}
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    isActive(category.href)
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {category.name}
+                </Link>
+                
+                {/* Sub-items for categories with children */}
+                {category.children && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    {category.children.map((subItem) => (
+                      <Link
+                        key={subItem.name}
+                        href={subItem.href}
+                        className={`block px-3 py-1 text-sm transition-colors ${
+                          isActive(subItem.href)
+                            ? 'text-blue-600'
+                            : 'text-gray-600 hover:text-blue-600'
+                        }`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {subItem.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {/* Protected items for authenticated users */}
+            {user && protectedNavItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -277,6 +342,14 @@ export default function Navigation() {
         onClose={() => setAuthModalOpen(false)}
         defaultMode={authMode}
       />
+      
+      {/* Secondary Navigation */}
+      {currentCategory && (
+        <SecondaryNavigation 
+          category={currentCategory} 
+          isVisible={!isMenuOpen}
+        />
+      )}
     </nav>
   );
 } 
