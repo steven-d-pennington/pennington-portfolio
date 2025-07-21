@@ -1,14 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-
-// Only initialize Supabase if we have the required environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-let supabase: SupabaseClient | null = null;
-if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-}
+import { createSupabaseServer } from '@/utils/supabase-server';
 
 const CLOUD_ENGINEER_SYSTEM_PROMPT = `You are a cloud engineering assistant representing Monkey LoveStack, a full-stack development company specializing in bringing ideas to life on the web. Your expertise includes:
 
@@ -55,6 +46,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No message provided.' }, { status: 400 });
     }
 
+    // Get authenticated user from session
+    const supabase = await createSupabaseServer();
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id || null;
+
     // Build conversation context
     const messages = [
       { role: 'system', content: CLOUD_ENGINEER_SYSTEM_PROMPT },
@@ -100,14 +96,15 @@ export async function POST(request: NextRequest) {
     const data = await openaiRes.json();
     const reply = data.choices?.[0]?.message?.content || '';
 
-    // Save to Supabase if persistChat is enabled and Supabase is available
-    if (persistChat && reply && supabase) {
+    // Save to Supabase if persistChat is enabled
+    if (persistChat && reply) {
       try {
         const { error: dbError } = await supabase
           .from('chat_conversations')
           .insert({
             user_message: message,
             assistant_response: reply,
+            user_id: userId, // Associate with authenticated user (null for anonymous)
             created_at: new Date().toISOString(),
           });
 
@@ -119,8 +116,6 @@ export async function POST(request: NextRequest) {
         console.error('Database error:', dbError);
         // Don't fail the request if DB save fails
       }
-    } else if (persistChat && !supabase) {
-      console.warn('Persist chat requested but Supabase not configured');
     }
 
     return NextResponse.json({ reply });

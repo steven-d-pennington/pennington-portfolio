@@ -1,14 +1,71 @@
 import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient, createServerClient } from '@supabase/ssr';
+import { NextRequest, NextResponse } from 'next/server';
 
-// Initialize the Supabase client
-// These environment variables should be set in your deployment environment
-// For local development, you can use a .env.local file
+// Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-url.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
-// Create a single supabase client for the entire app
-// This will be a mock client if environment variables are not set
+// Legacy client for backward compatibility (non-auth features)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Client-side Supabase client for React components
+export function createSupabaseBrowser() {
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+}
+
+// Middleware Supabase client
+export function createSupabaseMiddleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return request.cookies.get(name)?.value;
+      },
+      set(name: string, value: string, options: Record<string, unknown>) {
+        request.cookies.set({
+          name,
+          value,
+          ...options,
+        });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
+        response.cookies.set({
+          name,
+          value,
+          ...options,
+        });
+      },
+      remove(name: string, options: Record<string, unknown>) {
+        request.cookies.set({
+          name,
+          value: '',
+          ...options,
+        });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
+        response.cookies.set({
+          name,
+          value: '',
+          ...options,
+        });
+      },
+    },
+  });
+
+  return { supabase, response };
+}
 
 // Helper function to submit a contact/quote request
 export async function submitContactRequest(formData: {
@@ -20,6 +77,7 @@ export async function submitContactRequest(formData: {
   timeline?: string;
   description: string;
   message?: string;
+  userId?: string | null;
 }) {
   try {
     const { data, error } = await supabase
@@ -34,6 +92,7 @@ export async function submitContactRequest(formData: {
           timeline: formData.timeline || null,
           description: formData.description,
           message: formData.message || null,
+          user_id: formData.userId || null,
           created_at: new Date().toISOString(),
           status: 'new'
         }

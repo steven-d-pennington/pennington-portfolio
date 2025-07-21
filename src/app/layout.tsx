@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import FloatingChat from "@/components/FloatingChat";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthProvider } from "@/components/AuthProvider";
+import AuthErrorHandler from "@/components/AuthErrorHandler";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,15 +41,18 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ThemeProvider>
-          <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
-            <Navigation />
-            <main className="flex-grow">
-              {children}
-            </main>
-            <Footer />
-            <CookieConsent />
-            <FloatingChat />
-          </div>
+          <AuthProvider>
+            <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
+              <Navigation />
+              <main className="flex-grow">
+                {children}
+              </main>
+              <Footer />
+              <CookieConsent />
+              <FloatingChat />
+              <AuthErrorHandler />
+            </div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

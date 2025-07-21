@@ -1,6 +1,20 @@
 export default function CaseStudies() {
   const caseStudies = [
     {
+      id: 'oed-modernization',
+      title: 'From Days to Seconds: How Modern APIs Revolutionized a Legacy System',
+      excerpt: 'How a state employment agency dramatically reduced unemployment claims processing time from days to seconds by strategically integrating modern APIs with their decades-old COBOL system.',
+      category: 'API Integration & Legacy Modernization',
+      industry: 'Government Technology',
+      results: [
+        '99% Reduction in Processing Time',
+        'Improved Citizen Service',
+        'Increased Operational Efficiency',
+      ],
+      technologies: ['ColdFusion', 'APIs', 'Legacy Systems', 'System Integration'],
+      featured: true
+    },
+    {
       id: 'emar-migration',
       title: 'From Legacy to Leader: A Cloud Native Transformation Journey in the EMAR Market',
       excerpt: 'How a SaaS provider specializing in Electronic Medication Administration Record (EMAR) systems successfully transformed from traditional on-premises architecture to a modern cloud-native platform, capturing over 10% market share.',
@@ -13,7 +27,21 @@ export default function CaseStudies() {
         'Reduced support response times by 70%'
       ],
       technologies: ['AWS', 'Kubernetes', 'Docker', 'Microservices', 'HIPAA Compliance'],
-      featured: true
+      featured: false
+    },
+    {
+      id: 'networld-blueprint',
+      title: 'The Innovator\'s Blueprint: Building a Disruption Engine from Scratch',
+      excerpt: 'How a small, agile team disrupted the internet service provider market by offering unheard-of affordability and pioneering city-wide wireless technology.',
+      category: 'Internet Infrastructure & Product Development',
+      industry: 'Startup & Disruption',
+      results: [
+        '$79/year Unlimited Dial-up',
+        'First City-wide Wireless Network',
+        '7th Fastest Growing Company in Utah (2000)',
+      ],
+      technologies: ['ColdFusion', 'Wireless Networking', 'Custom Billing Systems', 'Web Services'],
+      featured: false
     }
   ];
 
@@ -100,27 +128,18 @@ export default function CaseStudies() {
                 <div className="bg-white rounded-lg p-6 shadow-sm">
                   <h4 className="font-semibold text-gray-900 mb-4">Executive Summary</h4>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    This case study examines how a SaaS provider specializing in Electronic Medication Administration Record (EMAR) systems for assisted living communities successfully transformed from a traditional on-premises monolithic architecture to a modern cloud-native platform. This strategic migration enabled the company to capture over 10% market share and establish itself as an industry leader, demonstrating the transformative power of cloud adoption in the healthcare technology sector.
+                    {caseStudy.excerpt}
                   </p>
                   <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-500">Market Share:</span>
-                        <div className="font-semibold text-green-600">10%+</div>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Uptime Improvement:</span>
-                        <div className="font-semibold text-green-600">95% → 99.9%</div>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Deployment Speed:</span>
-                        <div className="font-semibold text-green-600">Monthly → Weekly</div>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Support Efficiency:</span>
-                        <div className="font-semibold text-green-600">70% Faster</div>
-                      </div>
-                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-2 text-sm">Key Highlights:</h4>
+                    <ul className="space-y-1">
+                      {caseStudy.results.map((result, index) => (
+                        <li key={index} className="flex items-start">
+                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                          <span className="text-xs text-gray-700">{result}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
