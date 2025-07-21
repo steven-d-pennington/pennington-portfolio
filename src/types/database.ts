@@ -437,7 +437,7 @@ export type ProjectUpdateInsert = Database['public']['Tables']['project_updates'
 
 // Update types
 export type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
-export type ProjectUpdate = Database['public']['Tables']['projects']['Update']
+export type ProjectUpdateType = Database['public']['Tables']['projects']['Update']
 export type ProjectMemberUpdate = Database['public']['Tables']['project_members']['Update']
 export type TimeEntryUpdate = Database['public']['Tables']['time_entries']['Update']
 export type InvoiceUpdate = Database['public']['Tables']['invoices']['Update']

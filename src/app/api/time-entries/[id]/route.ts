@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/database'
+import { supabase } from '@/lib/server-database'
 import type { TimeEntryUpdate } from '@/types/database'
 
 export async function PATCH(
@@ -51,7 +51,14 @@ export async function PATCH(
       updateData.hourly_rate = Number(updateData.hourly_rate)
     }
 
-    const updatedTimeEntry = await db.updateTimeEntry(entryId, updateData)
+    const { data: updatedTimeEntry, error } = await supabase
+      .from('time_entries')
+      .update(updateData)
+      .eq('id', entryId)
+      .select()
+      .single()
+
+    if (error) throw error
 
     return NextResponse.json({ timeEntry: updatedTimeEntry })
   } catch (error: any) {
@@ -80,7 +87,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await db.deleteTimeEntry(entryId)
+    const { error } = await supabase
+      .from('time_entries')
+      .delete()
+      .eq('id', entryId)
+
+    if (error) throw error
 
     return NextResponse.json({ message: 'Time entry deleted successfully' })
   } catch (error: any) {

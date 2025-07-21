@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/database'
-import type { ProjectUpdate } from '@/types/database'
+import { supabase, getProject } from '@/lib/server-database'
+import type { ProjectUpdateType } from '@/types/database'
 
 export async function GET(
   request: NextRequest,
@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const project = await db.getProject(projectId)
+    const project = await getProject(projectId)
 
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -62,7 +62,7 @@ export async function PATCH(
     }
 
     // Extract GitHub repo name if URL is being updated
-    let updateData: ProjectUpdate = { ...body }
+    let updateData: ProjectUpdateType = { ...body }
     if (body.github_repo_url) {
       const repoMatch = body.github_repo_url.match(/github\.com\/([^\/]+\/[^\/]+)/i)
       if (repoMatch) {
@@ -70,7 +70,14 @@ export async function PATCH(
       }
     }
 
-    const updatedProject = await db.updateProject(projectId, updateData)
+    const { data: updatedProject, error } = await supabase
+      .from('projects')
+      .update(updateData)
+      .eq('id', projectId)
+      .select()
+      .single()
+
+    if (error) throw error
 
     return NextResponse.json({ project: updatedProject })
   } catch (error: any) {
@@ -105,7 +112,11 @@ export async function DELETE(
     // - Invoices and line items
     // - GitHub webhook events
     // - Project updates
-    await db.client.from('projects').delete().eq('id', projectId)
+    const { error: deleteError } = await supabase.from('projects').delete().eq('id', projectId)
+    
+    if (deleteError) {
+      throw deleteError
+    }
 
     return NextResponse.json({ message: 'Project deleted successfully' })
   } catch (error: any) {

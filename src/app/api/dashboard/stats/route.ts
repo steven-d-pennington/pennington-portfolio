@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/database'
+import { getDashboardStats } from '@/lib/server-database'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const stats = await db.getDashboardStats(userId, isAdmin)
+    const stats = await getDashboardStats(userId, isAdmin)
 
     return NextResponse.json({ stats })
   } catch (error: any) {

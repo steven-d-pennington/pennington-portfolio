@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, supabaseAdmin } from '@/lib/database'
+import { supabase, getProjects } from '@/lib/server-database'
 import type { ProjectInsert } from '@/types/database'
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get projects
-    const projects = await db.getProjects(userId || undefined, isAdmin)
+    const projects = await getProjects(userId || undefined, isAdmin)
 
     return NextResponse.json({ projects })
   } catch (error: any) {
@@ -80,7 +80,13 @@ export async function POST(request: NextRequest) {
       fixed_price: fixed_price || null
     }
 
-    const newProject = await db.createProject(projectData)
+    const { data: newProject, error } = await supabase
+      .from('projects')
+      .insert(projectData)
+      .select()
+      .single()
+
+    if (error) throw error
 
     return NextResponse.json({ project: newProject }, { status: 201 })
   } catch (error: any) {

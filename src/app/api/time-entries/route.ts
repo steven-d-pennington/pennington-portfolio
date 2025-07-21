@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/database'
+import { supabase } from '@/lib/server-database'
 import type { TimeEntryInsert } from '@/types/database'
 
 export async function GET(request: NextRequest) {
@@ -16,12 +16,41 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const timeEntries = await db.getTimeEntries(
-      projectId || undefined,
-      userId || undefined,
-      startDate || undefined,
-      endDate || undefined
-    )
+    let query = supabase
+      .from('time_entries')
+      .select(`
+        *,
+        projects (
+          id,
+          name,
+          client_id
+        ),
+        user_profiles (
+          id,
+          full_name,
+          avatar_url
+        )
+      `)
+
+    if (projectId) {
+      query = query.eq('project_id', projectId)
+    }
+
+    if (userId) {
+      query = query.eq('user_id', userId)
+    }
+
+    if (startDate) {
+      query = query.gte('date_worked', startDate)
+    }
+
+    if (endDate) {
+      query = query.lte('date_worked', endDate)
+    }
+
+    const { data: timeEntries, error } = await query.order('date_worked', { ascending: false })
+
+    if (error) throw error
 
     return NextResponse.json({ timeEntries })
   } catch (error: any) {
@@ -97,7 +126,13 @@ export async function POST(request: NextRequest) {
       date_worked
     }
 
-    const newTimeEntry = await db.createTimeEntry(timeEntryData)
+    const { data: newTimeEntry, error } = await supabase
+      .from('time_entries')
+      .insert(timeEntryData)
+      .select()
+      .single()
+
+    if (error) throw error
 
     return NextResponse.json({ timeEntry: newTimeEntry }, { status: 201 })
   } catch (error: any) {

@@ -21,7 +21,10 @@
       "Bash(npx tsc:*)",
       "Bash(npm run lint)",
       "Bash(mkdir:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(timeout 30s npm run dev)",
+      "Bash(timeout 20s npm run dev)",
+      "Bash(taskkill:*)"
     ],
     "deny": []
   }

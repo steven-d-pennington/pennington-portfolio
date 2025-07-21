@@ -4,8 +4,25 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@/components/AuthProvider'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { supabase } from '@/utils/supabase'
-import { formatCurrency, formatHours } from '@/lib/database'
 import type { UserProfile, ProjectWithClient } from '@/types/database'
+
+// Helper functions for formatting
+const formatCurrency = (amount: number, currency = 'USD') => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency
+  }).format(amount)
+}
+
+const formatHours = (hours: number) => {
+  const wholeHours = Math.floor(hours)
+  const minutes = Math.round((hours % 1) * 60)
+  
+  if (minutes === 0) {
+    return `${wholeHours}h`
+  }
+  return `${wholeHours}h ${minutes}m`
+}
 
 function ProjectsDashboardPage() {
   const { user, userProfile } = useUser()
