@@ -60,31 +60,31 @@ export default function Navigation() {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 h-24 flex items-center overflow-visible">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex justify-between items-center h-full">
-          <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center space-x-3">
+    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 relative w-full">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
+          <div className="flex-shrink-0 flex items-center min-w-0">
+            <Link href="/" className="flex items-center space-x-2">
               <Image
                 src="/lovestack-trans.png"
                 alt="Monkey LoveStack Logo"
-                width={80}
-                height={80}
-                className="h-20 w-20"
+                width={48}
+                height={48}
+                className="h-10 w-10 sm:h-12 sm:w-12 lg:h-16 lg:w-16"
                 priority
               />
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-gray-900">Monkey</span>
-                  <span className="text-2xl font-bold text-blue-600 ml-1">LoveStack</span>
+                  <span className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 whitespace-nowrap">Monkey</span>
+                  <span className="text-base sm:text-lg lg:text-xl font-bold text-blue-600 ml-1 whitespace-nowrap">LoveStack</span>
                 </div>
-                <span className="text-sm text-gray-600 leading-tight">Engineering cloud solutions</span>
+                <span className="text-xs text-gray-600 leading-tight hidden sm:block whitespace-nowrap">Engineering cloud solutions</span>
               </div>
             </Link>
           </div>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-12">
+          <div className="hidden xl:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -168,7 +168,7 @@ export default function Navigation() {
           </div>
 
           {/* Mobile menu button and theme toggle */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className="xl:hidden flex items-center space-x-1 flex-shrink-0">
             <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -176,12 +176,12 @@ export default function Navigation() {
             >
               <span className="sr-only">Open main menu</span>
               {isMenuOpen ? (
-                <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <svg className="block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
             </button>
@@ -191,8 +191,8 @@ export default function Navigation() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
+        <div className="xl:hidden absolute top-full left-0 w-full bg-white border-t border-gray-200 shadow-lg z-40">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <Link
                 key={item.name}
