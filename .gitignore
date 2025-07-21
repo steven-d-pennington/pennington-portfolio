@@ -43,3 +43,9 @@ tempvariabes.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# development screenshots and temporary files
+ss/
+mobile*.png
+navigation.png
+temp_commit_message.txt
