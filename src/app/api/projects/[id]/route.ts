@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase, getProject } from '@/lib/server-database'
+import { supabaseAdmin, getProject } from '@/lib/server-database'
 import type { ProjectUpdateType } from '@/types/database'
 
 export async function GET(
@@ -26,10 +26,10 @@ export async function GET(
     }
 
     return NextResponse.json({ project })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching project:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch project', details: error.message },
+      { error: 'Failed to fetch project', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -62,7 +62,7 @@ export async function PATCH(
     }
 
     // Extract GitHub repo name if URL is being updated
-    let updateData: ProjectUpdateType = { ...body }
+    const updateData: ProjectUpdateType = { ...body }
     if (body.github_repo_url) {
       const repoMatch = body.github_repo_url.match(/github\.com\/([^\/]+\/[^\/]+)/i)
       if (repoMatch) {
@@ -70,7 +70,7 @@ export async function PATCH(
       }
     }
 
-    const { data: updatedProject, error } = await supabase
+    const { data: updatedProject, error } = await supabaseAdmin
       .from('projects')
       .update(updateData)
       .eq('id', projectId)
@@ -80,10 +80,10 @@ export async function PATCH(
     if (error) throw error
 
     return NextResponse.json({ project: updatedProject })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating project:', error)
     return NextResponse.json(
-      { error: 'Failed to update project', details: error.message },
+      { error: 'Failed to update project', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -112,17 +112,17 @@ export async function DELETE(
     // - Invoices and line items
     // - GitHub webhook events
     // - Project updates
-    const { error: deleteError } = await supabase.from('projects').delete().eq('id', projectId)
+    const { error: deleteError } = await supabaseAdmin.from('projects').delete().eq('id', projectId)
     
     if (deleteError) {
       throw deleteError
     }
 
     return NextResponse.json({ message: 'Project deleted successfully' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting project:', error)
     return NextResponse.json(
-      { error: 'Failed to delete project', details: error.message },
+      { error: 'Failed to delete project', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

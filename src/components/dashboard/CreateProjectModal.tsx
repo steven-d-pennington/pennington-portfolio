@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@/components/AuthProvider'
-import { supabase } from '@/utils/supabase'
+import { createSupabaseBrowser } from '@/utils/supabase'
 
 interface CreateProjectModalProps {
   isOpen: boolean
@@ -25,7 +25,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
     hourly_rate: '',
     fixed_price: ''
   })
-  const [clients, setClients] = useState<any[]>([])
+  const [clients, setClients] = useState<Array<{id: string, full_name: string, email: string, company_name: string | null}>>([])
   const [loadingClients, setLoadingClients] = useState(false)
 
   // Load clients when modal opens
@@ -33,15 +33,16 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
     if (isOpen && !loadingClients && clients.length === 0) {
       loadClients()
     }
-  }, [isOpen])
+  }, [isOpen, loadingClients, clients.length])
 
   const loadClients = async () => {
     setLoadingClients(true)
     try {
+      const supabase = createSupabaseBrowser()
       const { data, error } = await supabase
         .from('user_profiles')
         .select('id, full_name, email, company_name')
-        .in('role', ['client', 'user'])
+        .in('role', ['client', 'user', 'admin'])
         .order('full_name')
 
       if (error) throw error
@@ -59,6 +60,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
 
     setLoading(true)
     try {
+      const supabase = createSupabaseBrowser()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No session')
 
@@ -72,7 +74,9 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
           ...formData,
           estimated_hours: formData.estimated_hours ? parseInt(formData.estimated_hours) : null,
           hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
-          fixed_price: formData.fixed_price ? parseFloat(formData.fixed_price) : null
+          fixed_price: formData.fixed_price ? parseFloat(formData.fixed_price) : null,
+          start_date: formData.start_date || null,
+          end_date: formData.end_date || null
         })
       })
 
@@ -96,9 +100,9 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
       })
       onProjectCreated()
       onClose()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating project:', error)
-      alert(error.message || 'Failed to create project')
+      alert(error instanceof Error ? error.message : 'Failed to create project')
     } finally {
       setLoading(false)
     }

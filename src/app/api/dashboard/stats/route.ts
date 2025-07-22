@@ -16,10 +16,10 @@ export async function GET(request: NextRequest) {
     const stats = await getDashboardStats(userId, isAdmin)
 
     return NextResponse.json({ stats })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching dashboard stats:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch dashboard stats', details: error.message },
+      { error: 'Failed to fetch dashboard stats', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

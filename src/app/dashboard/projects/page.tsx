@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useUser } from '@/components/AuthProvider'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { supabase } from '@/utils/supabase'
+import { createSupabaseBrowser } from '@/utils/supabase'
 import CreateProjectModal from '@/components/dashboard/CreateProjectModal'
 import ProjectDetailsModal from '@/components/dashboard/ProjectDetailsModal'
 import QuickStatsCard from '@/components/dashboard/QuickStatsCard'
-import type { UserProfile, ProjectWithClient } from '@/types/database'
+import type { ProjectWithClient } from '@/types/database'
 
 // Helper functions for formatting
 const formatCurrency = (amount: number, currency = 'USD') => {
@@ -66,18 +66,33 @@ function ProjectsDashboardPage() {
 
       const isAdmin = userProfile.role === 'admin'
       
-      // Get auth session for API calls
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      // Try multiple methods to get a valid session
+      let session = null
+      let sessionError = null
       
-      if (sessionError) {
-        console.error('Session error:', sessionError)
-        setError('Authentication error. Please try signing in again.')
-        return
+      // Create browser client for this request
+      const supabase = createSupabaseBrowser()
+      
+      // Method 1: Get current session
+      const { data: { session: currentSession }, error: currentError } = await supabase.auth.getSession()
+      if (currentSession?.access_token) {
+        session = currentSession
+      } else {
+        console.log('No current session, trying refresh...', currentError)
+        
+        // Method 2: Try to refresh session
+        const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession()
+        if (refreshedSession?.access_token) {
+          session = refreshedSession
+          console.log('Session refreshed successfully')
+        } else {
+          sessionError = refreshError || currentError
+        }
       }
       
       if (!session?.access_token) {
-        console.error('No valid session found')
-        setError('Please sign in to access the dashboard.')
+        console.error('No valid session found after refresh attempts:', sessionError)
+        setError('Your session has expired. Please sign out and sign back in.')
         return
       }
 
@@ -110,9 +125,9 @@ function ProjectsDashboardPage() {
       const { stats: dashStats } = await statsResponse.json()
       setStats(dashStats)
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load dashboard data:', err)
-      setError(err.message || 'Failed to load dashboard data')
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard data')
     } finally {
       setLoading(false)
     }
@@ -153,13 +168,25 @@ function ProjectsDashboardPage() {
             </h1>
             <p className="text-red-600 dark:text-red-300 mb-6">{error}</p>
             <div className="flex space-x-3 justify-center">
-              {error.includes('sign in') ? (
-                <button 
-                  onClick={() => window.location.href = '/login'}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                >
-                  Sign In
-                </button>
+              {(error.includes('sign in') || error.includes('session')) ? (
+                <>
+                  <button 
+                    onClick={async () => {
+                      const supabase = createSupabaseBrowser()
+                      await supabase.auth.signOut()
+                      window.location.href = '/login'
+                    }}
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+                  >
+                    Sign Out & Sign In
+                  </button>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </>
               ) : (
                 <button 
                   onClick={() => window.history.back()}

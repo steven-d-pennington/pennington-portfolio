@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@/components/AuthProvider'
-import { supabase } from '@/utils/supabase'
+import { createSupabaseBrowser } from '@/utils/supabase'
 import type { ProjectWithClient } from '@/types/database'
 
 interface ProjectDetailsModalProps {
@@ -43,6 +43,7 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
     
     setLoading(true)
     try {
+      const supabase = createSupabaseBrowser()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No session')
 
@@ -81,6 +82,7 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
 
     setLoading(true)
     try {
+      const supabase = createSupabaseBrowser()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No session')
 
@@ -94,7 +96,9 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
           ...editForm,
           estimated_hours: editForm.estimated_hours ? parseInt(editForm.estimated_hours) : null,
           hourly_rate: editForm.hourly_rate ? parseFloat(editForm.hourly_rate) : null,
-          fixed_price: editForm.fixed_price ? parseFloat(editForm.fixed_price) : null
+          fixed_price: editForm.fixed_price ? parseFloat(editForm.fixed_price) : null,
+          start_date: editForm.start_date || null,
+          end_date: editForm.end_date || null
         })
       })
 
@@ -105,7 +109,7 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
 
       setIsEditing(false)
       onProjectUpdated()
-      loadProjectDetails()
+      onClose() // Close modal and return to projects dashboard
     } catch (error: any) {
       console.error('Error updating project:', error)
       alert(error.message || 'Failed to update project')

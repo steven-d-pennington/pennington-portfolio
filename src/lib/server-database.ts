@@ -36,7 +36,10 @@ export const formatHours = (hours: number) => {
 
 // Server-side database operations
 export async function getProjects(userId?: string, isAdmin: boolean = false) {
-  let query = supabase
+  // Use admin client for admin users to bypass RLS
+  const client = isAdmin ? supabaseAdmin : supabase
+  
+  let query = client
     .from('projects')
     .select(`
       *,
@@ -60,7 +63,7 @@ export async function getProjects(userId?: string, isAdmin: boolean = false) {
 }
 
 export async function getProject(projectId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('projects')
     .select(`
       *,
@@ -101,8 +104,11 @@ export async function getDashboardStats(userId: string, isAdmin: boolean = false
   }
 
   try {
+    // Use admin client for admin users to bypass RLS
+    const client = isAdmin ? supabaseAdmin : supabase
+    
     // Get project counts
-    let projectQuery = supabase
+    let projectQuery = client
       .from('projects')
       .select('id, status')
 
@@ -117,7 +123,7 @@ export async function getDashboardStats(userId: string, isAdmin: boolean = false
     }
 
     // Get time tracking stats
-    let timeQuery = supabase
+    let timeQuery = client
       .from('time_entries')
       .select('hours_worked, is_billable, hourly_rate')
 
@@ -131,7 +137,7 @@ export async function getDashboardStats(userId: string, isAdmin: boolean = false
     }
 
     // Get invoice stats
-    let invoiceQuery = supabase
+    let invoiceQuery = client
       .from('invoices')
       .select('total_amount, status')
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase, getProjects } from '@/lib/server-database'
+import { supabaseAdmin, getProjects } from '@/lib/server-database'
 import type { ProjectInsert } from '@/types/database'
 
 export async function GET(request: NextRequest) {
@@ -18,10 +18,10 @@ export async function GET(request: NextRequest) {
     const projects = await getProjects(userId || undefined, isAdmin)
 
     return NextResponse.json({ projects })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching projects:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch projects', details: error.message },
+      { error: 'Failed to fetch projects', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -30,10 +30,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log('CREATE PROJECT - Request body:', body)
     
     // Get user from auth header
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
+      console.log('CREATE PROJECT - No auth header')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -41,6 +43,7 @@ export async function POST(request: NextRequest) {
     const { name, client_id, description, github_repo_url, hourly_rate, fixed_price, start_date, end_date, estimated_hours } = body
 
     if (!name || !client_id) {
+      console.log('CREATE PROJECT - Missing required fields:', { name, client_id })
       return NextResponse.json(
         { error: 'Project name and client_id are required' },
         { status: 400 }
@@ -57,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     // Extract GitHub repo name from URL
     let github_repo_name = null
-    let github_default_branch = 'main'
+    const github_default_branch = 'main'
     if (github_repo_url) {
       const repoMatch = github_repo_url.match(/github\.com\/([^\/]+\/[^\/]+)/i)
       if (repoMatch) {
@@ -80,19 +83,24 @@ export async function POST(request: NextRequest) {
       fixed_price: fixed_price || null
     }
 
-    const { data: newProject, error } = await supabase
+    console.log('CREATE PROJECT - Inserting project data:', projectData)
+    const { data: newProject, error } = await supabaseAdmin
       .from('projects')
       .insert(projectData)
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.log('CREATE PROJECT - Database error:', error)
+      throw error
+    }
 
+    console.log('CREATE PROJECT - Success:', newProject)
     return NextResponse.json({ project: newProject }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating project:', error)
     return NextResponse.json(
-      { error: 'Failed to create project', details: error.message },
+      { error: 'Failed to create project', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
