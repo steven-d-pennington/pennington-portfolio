@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@/components/AuthProvider'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { supabase } from '@/utils/supabase'
+import CreateProjectModal from '@/components/dashboard/CreateProjectModal'
+import ProjectDetailsModal from '@/components/dashboard/ProjectDetailsModal'
+import QuickStatsCard from '@/components/dashboard/QuickStatsCard'
 import type { UserProfile, ProjectWithClient } from '@/types/database'
 
 // Helper functions for formatting
@@ -36,6 +39,9 @@ function ProjectsDashboardPage() {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
 
   useEffect(() => {
     if (user && userProfile) {
@@ -44,23 +50,34 @@ function ProjectsDashboardPage() {
   }, [user, userProfile])
 
   const loadDashboardData = async () => {
-    if (!user?.id || !userProfile) return
+    if (!user?.id || !userProfile) {
+      console.log('Missing user or userProfile:', { user: !!user, userProfile: !!userProfile })
+      return
+    }
 
     try {
       setLoading(true)
       
       // Check if user has access to project dashboard
       if (!userProfile.role || !['client', 'admin', 'team_member'].includes(userProfile.role)) {
-        setError('You do not have permission to access the project dashboard.')
+        setError(`You do not have permission to access the project dashboard. Your role: ${userProfile.role}`)
         return
       }
 
       const isAdmin = userProfile.role === 'admin'
       
       // Get auth session for API calls
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError)
+        setError('Authentication error. Please try signing in again.')
+        return
+      }
+      
       if (!session?.access_token) {
-        setError('Authentication session expired')
+        console.error('No valid session found')
+        setError('Please sign in to access the dashboard.')
         return
       }
 
@@ -127,15 +144,37 @@ function ProjectsDashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center max-w-md mx-auto">
-          <div className="bg-red-50 dark:bg-red-900 p-4 rounded-lg">
-            <h1 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">Access Denied</h1>
-            <p className="text-red-600 dark:text-red-300 mb-4">{error}</p>
-            <button 
-              onClick={() => window.history.back()}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
-            >
-              Go Back
-            </button>
+          <div className="bg-red-50 dark:bg-red-900 p-6 rounded-lg shadow-lg">
+            <svg className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <h1 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+              {error.includes('sign in') ? 'Authentication Required' : 'Access Denied'}
+            </h1>
+            <p className="text-red-600 dark:text-red-300 mb-6">{error}</p>
+            <div className="flex space-x-3 justify-center">
+              {error.includes('sign in') ? (
+                <button 
+                  onClick={() => window.location.href = '/login'}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                >
+                  Sign In
+                </button>
+              ) : (
+                <button 
+                  onClick={() => window.history.back()}
+                  className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
+                >
+                  Go Back
+                </button>
+              )}
+              <button 
+                onClick={() => window.location.href = '/'}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+              >
+                Home
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -157,7 +196,10 @@ function ProjectsDashboardPage() {
               </p>
             </div>
             {userProfile?.role === 'admin' && (
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={() => setShowCreateModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 New Project
               </button>
             )}
@@ -166,61 +208,49 @@ function ProjectsDashboardPage() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Projects</h3>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalProjects}</p>
-              </div>
-            </div>
-          </div>
+          <QuickStatsCard
+            title="Total Projects"
+            value={stats.totalProjects}
+            color="blue"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            }
+          />
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Projects</h3>
-                <p className="text-2xl font-bold text-green-600">{stats.activeProjects}</p>
-              </div>
-            </div>
-          </div>
+          <QuickStatsCard
+            title="Active Projects"
+            value={stats.activeProjects}
+            color="green"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Hours Worked</h3>
-                <p className="text-2xl font-bold text-purple-600">{formatHours(stats.totalHoursWorked)}</p>
-              </div>
-            </div>
-          </div>
+          <QuickStatsCard
+            title="Hours Worked"
+            value={formatHours(stats.totalHoursWorked)}
+            color="purple"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Outstanding Invoices</h3>
-                <p className="text-2xl font-bold text-yellow-600">{stats.outstandingInvoices}</p>
-              </div>
-            </div>
-          </div>
+          <QuickStatsCard
+            title="Outstanding Invoices"
+            value={stats.outstandingInvoices}
+            color="yellow"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+            }
+          />
         </div>
 
         {/* Projects List */}
@@ -243,7 +273,10 @@ function ProjectsDashboardPage() {
                   }
                 </p>
                 {userProfile?.role === 'admin' && (
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  <button 
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                     Create Project
                   </button>
                 )}
@@ -301,7 +334,13 @@ function ProjectsDashboardPage() {
                     </div>
                     
                     <div className="flex items-center space-x-2 ml-4">
-                      <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
+                      <button 
+                        onClick={() => {
+                          setSelectedProjectId(project.id)
+                          setShowDetailsModal(true)
+                        }}
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                      >
                         View Details
                       </button>
                       {(userProfile?.role === 'admin' || userProfile?.role === 'team_member') && (
@@ -318,6 +357,23 @@ function ProjectsDashboardPage() {
             </div>
           )}
         </div>
+
+        {/* Modals */}
+        <CreateProjectModal 
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onProjectCreated={loadDashboardData}
+        />
+
+        <ProjectDetailsModal
+          isOpen={showDetailsModal}
+          onClose={() => {
+            setShowDetailsModal(false)
+            setSelectedProjectId(null)
+          }}
+          projectId={selectedProjectId}
+          onProjectUpdated={loadDashboardData}
+        />
       </div>
     </div>
   )
