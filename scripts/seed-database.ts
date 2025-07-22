@@ -15,8 +15,13 @@
  * Usage: npm run seed
  */
 
+import { config } from 'dotenv'
+import { join } from 'path'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '../src/types/database'
+
+// Load environment variables from .env.local
+config({ path: join(process.cwd(), '.env.local') })
 
 // Types for seeding
 type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert']
@@ -64,85 +69,26 @@ const randomFromArray = <T>(array: T[]): T => {
   return array[Math.floor(Math.random() * array.length)]
 }
 
-// Test Data Collections
-const SAMPLE_USERS: UserProfileInsert[] = [
-  {
-    id: '11111111-1111-1111-1111-111111111111',
-    email: 'alex.chen@techstartup.com',
-    full_name: 'Alex Chen',
-    role: 'client',
-    company_name: 'TechStartup Inc',
-    phone: '+1-555-0101',
-    address: '123 Innovation Drive, San Francisco, CA 94107',
-    timezone: 'America/Los_Angeles'
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222222',
-    email: 'sarah.johnson@designco.com',
-    full_name: 'Sarah Johnson',
-    role: 'team_member',
-    company_name: 'Monkey LoveStack',
-    phone: '+1-555-0102',
-    address: '456 Creative Street, Austin, TX 78701',
-    timezone: 'America/Chicago'
-  },
-  {
-    id: '33333333-3333-3333-3333-333333333333',
-    email: 'michael.rodriguez@enterprise.com',
-    full_name: 'Michael Rodriguez',
-    role: 'client',
-    company_name: 'Enterprise Solutions LLC',
-    phone: '+1-555-0103',
-    address: '789 Business Plaza, New York, NY 10001',
-    timezone: 'America/New_York'
-  },
-  {
-    id: '44444444-4444-4444-4444-444444444444',
-    email: 'emma.wilson@freelance.dev',
-    full_name: 'Emma Wilson',
-    role: 'team_member',
-    company_name: 'Monkey LoveStack',
-    phone: '+1-555-0104',
-    address: '321 Remote Work Lane, Portland, OR 97201',
-    timezone: 'America/Los_Angeles'
-  },
-  {
-    id: '55555555-5555-5555-5555-555555555555',
-    email: 'david.kim@healthtech.org',
-    full_name: 'David Kim',
-    role: 'client',
-    company_name: 'HealthTech Solutions',
-    phone: '+1-555-0105',
-    address: '654 Medical Center Dr, Boston, MA 02115',
-    timezone: 'America/New_York'
-  },
-  {
-    id: '66666666-6666-6666-6666-666666666666',
-    email: 'maria.garcia@consultant.com',
-    full_name: 'Maria Garcia',
-    role: 'team_member',
-    company_name: 'Monkey LoveStack',
-    phone: '+1-555-0106',
-    address: '987 Consultant Circle, Denver, CO 80202',
-    timezone: 'America/Denver'
-  },
-  {
-    id: '77777777-7777-7777-7777-777777777777',
-    email: 'james.brown@retail.com',
-    full_name: 'James Brown',
-    role: 'client',
-    company_name: 'RetailMax Corporation',
-    phone: '+1-555-0107',
-    address: '147 Commerce Street, Atlanta, GA 30309',
-    timezone: 'America/New_York'
-  }
-]
+const generateUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0
+    const v = c == 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
+// Existing users from database (from user_profiles_rows.csv)
+const EXISTING_USERS = {
+  ADMIN: 'f0b91f28-6b28-467a-bd1b-f9e1058a0d55', // Steven Pennington (admin)
+  CLIENT_1: '2fc7d3d3-d5a0-4ae2-9abf-9b0dd9311c63', // Steven P (will be client)
+  CLIENT_2: 'ee60f3d0-fc60-41bd-bbdb-d4e920f16922', // Steven Penn (will be client)
+}
 
 const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'E-commerce Platform Redesign',
     description: 'Complete overhaul of existing e-commerce platform with modern React frontend, microservices backend, and AWS cloud infrastructure.',
-    client_id: '11111111-1111-1111-1111-111111111111', // Alex Chen
+    client_id: EXISTING_USERS.CLIENT_1, // Steven P
     status: 'active',
     start_date: randomPastDate(45),
     end_date: randomFutureDate(30),
@@ -155,7 +101,7 @@ const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'Mobile Banking App',
     description: 'Cross-platform mobile application for digital banking services with biometric authentication and real-time notifications.',
-    client_id: '33333333-3333-3333-3333-333333333333', // Michael Rodriguez
+    client_id: EXISTING_USERS.CLIENT_2, // Steven Penn
     status: 'planning',
     start_date: randomFutureDate(14),
     end_date: randomFutureDate(120),
@@ -168,7 +114,7 @@ const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'Healthcare Data Analytics Dashboard',
     description: 'HIPAA-compliant analytics dashboard for healthcare providers with real-time patient data visualization.',
-    client_id: '55555555-5555-5555-5555-555555555555', // David Kim
+    client_id: EXISTING_USERS.CLIENT_1, // Steven P
     status: 'active',
     start_date: randomPastDate(60),
     end_date: randomFutureDate(45),
@@ -181,7 +127,7 @@ const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'Inventory Management System',
     description: 'Enterprise inventory management system with barcode scanning, automated reordering, and supplier integration.',
-    client_id: '77777777-7777-7777-7777-777777777777', // James Brown
+    client_id: EXISTING_USERS.CLIENT_2, // Steven Penn
     status: 'completed',
     start_date: randomPastDate(120),
     end_date: randomPastDate(30),
@@ -194,7 +140,7 @@ const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'API Gateway Migration',
     description: 'Migration from legacy API gateway to modern cloud-native solution with improved performance and security.',
-    client_id: '11111111-1111-1111-1111-111111111111', // Alex Chen
+    client_id: EXISTING_USERS.CLIENT_1, // Steven P
     status: 'on_hold',
     start_date: randomPastDate(90),
     estimated_hours: 120,
@@ -203,7 +149,7 @@ const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'Customer Portal Enhancement',
     description: 'Enhanced customer self-service portal with AI-powered chatbot and advanced search capabilities.',
-    client_id: '33333333-3333-3333-3333-333333333333', // Michael Rodriguez
+    client_id: EXISTING_USERS.CLIENT_2, // Steven Penn
     status: 'active',
     start_date: randomPastDate(30),
     end_date: randomFutureDate(60),
@@ -216,7 +162,7 @@ const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'DevOps Pipeline Setup',
     description: 'Complete CI/CD pipeline implementation with automated testing, deployment, and monitoring.',
-    client_id: '55555555-5555-5555-5555-555555555555', // David Kim
+    client_id: EXISTING_USERS.CLIENT_1, // Steven P
     status: 'completed',
     start_date: randomPastDate(75),
     end_date: randomPastDate(15),
@@ -226,7 +172,7 @@ const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'Blockchain Integration POC',
     description: 'Proof of concept for blockchain-based supply chain tracking system.',
-    client_id: '77777777-7777-7777-7777-777777777777', // James Brown
+    client_id: EXISTING_USERS.CLIENT_2, // Steven Penn
     status: 'cancelled',
     start_date: randomPastDate(150),
     estimated_hours: 60,
@@ -235,7 +181,7 @@ const SAMPLE_PROJECTS: ProjectInsert[] = [
   {
     name: 'Legacy System Modernization',
     description: 'Gradual modernization of legacy COBOL systems to modern Java-based microservices architecture.',
-    client_id: '33333333-3333-3333-3333-333333333333', // Michael Rodriguez
+    client_id: EXISTING_USERS.CLIENT_1, // Steven P
     status: 'planning',
     start_date: randomFutureDate(30),
     end_date: randomFutureDate(365),
@@ -322,30 +268,25 @@ async function clearExistingData() {
   await supabase.from('project_members').delete().neq('id', '00000000-0000-0000-0000-000000000000')
   await supabase.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000')
   
-  // Don't delete user profiles for existing users like steven@spennington.dev
-  // Only delete our test users
-  const testUserIds = SAMPLE_USERS.map(user => user.id).filter(Boolean)
-  if (testUserIds.length > 0) {
-    await supabase.from('user_profiles').delete().in('id', testUserIds)
-  }
+  // Don't delete user profiles - we're using existing users from the database
   
   console.log('✅ Existing test data cleared')
 }
 
-async function seedUsers() {
-  console.log('👥 Seeding user profiles...')
+async function getExistingUsers() {
+  console.log('👥 Loading existing user profiles...')
   
   const { data, error } = await supabase
     .from('user_profiles')
-    .insert(SAMPLE_USERS)
-    .select()
+    .select('*')
+    .in('id', Object.values(EXISTING_USERS))
   
   if (error) {
-    console.error('❌ Error seeding users:', error)
+    console.error('❌ Error fetching existing users:', error)
     throw error
   }
   
-  console.log(`✅ Created ${data.length} user profiles`)
+  console.log(`✅ Found ${data.length} existing users`)
   return data
 }
 
@@ -369,23 +310,16 @@ async function seedProjects() {
 async function seedProjectMembers(projects: any[], users: any[]) {
   console.log('👨‍💼 Seeding project members...')
   
-  const teamMembers = users.filter(user => user.role === 'team_member')
   const projectMembers: ProjectMemberInsert[] = []
   
-  // Assign team members to projects
+  // Assign Steven Pennington (admin) as lead developer to all projects
   projects.forEach(project => {
-    // Each project gets 1-3 team members
-    const memberCount = Math.floor(Math.random() * 3) + 1
-    const assignedMembers = teamMembers.sort(() => 0.5 - Math.random()).slice(0, memberCount)
-    
-    assignedMembers.forEach((member, index) => {
-      projectMembers.push({
-        project_id: project.id,
-        user_id: member.id,
-        role: index === 0 ? 'Lead Developer' : randomFromArray(['Developer', 'Designer', 'QA Engineer', 'DevOps Engineer']),
-        can_track_time: true,
-        can_view_financials: index === 0 // Only lead can view financials
-      })
+    projectMembers.push({
+      project_id: project.id,
+      user_id: EXISTING_USERS.ADMIN, // Steven Pennington
+      role: 'Lead Developer',
+      can_track_time: true,
+      can_view_financials: true
     })
   })
   
@@ -423,7 +357,9 @@ async function seedTimeEntries(projects: any[], projectMembers: any[]) {
       const hoursWorked = Math.round((Math.random() * 7 + 1) * 4) / 4 // 1-8 hours in 15min increments
       const dateWorked = randomPastDate(90)
       
+      const entryId = generateUUID()
       timeEntries.push({
+        id: entryId,
         project_id: project.id,
         user_id: member.user_id,
         hours_worked: hoursWorked,
@@ -463,7 +399,6 @@ async function seedProjectUpdates(projects: any[], users: any[]) {
   console.log('📝 Seeding project updates...')
   
   const updates: ProjectUpdateInsert[] = []
-  const teamMembers = users.filter(u => u.role === 'team_member')
   
   projects.forEach(project => {
     // Generate 2-8 updates per project
@@ -471,7 +406,7 @@ async function seedProjectUpdates(projects: any[], users: any[]) {
     
     for (let i = 0; i < updateCount; i++) {
       const updateType = randomFromArray(PROJECT_UPDATE_TYPES)
-      const author = randomFromArray(teamMembers)
+      const authorId = EXISTING_USERS.ADMIN // Steven Pennington as author
       
       const updateTitles = {
         milestone: [`${project.name} - Phase ${i + 1} Complete`, `Milestone: ${randomFromArray(['MVP', 'Beta', 'Testing', 'Deployment'])} Reached`],
@@ -491,7 +426,7 @@ async function seedProjectUpdates(projects: any[], users: any[]) {
       
       updates.push({
         project_id: project.id,
-        author_id: author.id,
+        author_id: authorId,
         title: randomFromArray(updateTitles[updateType]),
         content: updateContent[updateType],
         update_type: updateType,
@@ -536,7 +471,7 @@ async function seedInvoicesAndPayments(projects: any[], timeEntries: TimeEntryIn
       const dueDate = new Date(issueDate)
       dueDate.setDate(dueDate.getDate() + 30)
       
-      const invoiceId = `invoice-${invoiceNumber}`
+      const invoiceId = generateUUID()
       
       // Calculate invoice amount based on time entries
       const projectTimeEntries = timeEntries.filter(te => te.project_id === project.id && te.is_billable)
@@ -567,7 +502,7 @@ async function seedInvoicesAndPayments(projects: any[], timeEntries: TimeEntryIn
             quantity: entry.hours_worked,
             unit_price: entry.hourly_rate || 150,
             total_price: lineTotal,
-            time_entry_ids: [entry.id || '']
+            time_entry_ids: [entry.id!]
           })
         })
       }
@@ -713,7 +648,7 @@ async function main() {
     await clearExistingData()
     
     // Seed in order due to foreign key dependencies
-    const users = await seedUsers()
+    const users = await getExistingUsers()
     const projects = await seedProjects()
     const projectMembers = await seedProjectMembers(projects, users)
     const timeEntries = await seedTimeEntries(projects, projectMembers)
