@@ -1,7 +1,7 @@
 'use client'
 
 import { useUser } from '@/components/AuthProvider'
-import { createSupabaseBrowser } from '@/utils/supabase'
+import { supabase } from '@/utils/supabase'
 import { useState } from 'react'
 
 export default function TestAuthPage() {
@@ -14,7 +14,7 @@ export default function TestAuthPage() {
 
     setTestLoading(true)
     try {
-      const supabase = createSupabaseBrowser()
+      // Using singleton supabase client
       const { data: { session } } = await supabase.auth.getSession()
       console.log('Current session:', session)
 

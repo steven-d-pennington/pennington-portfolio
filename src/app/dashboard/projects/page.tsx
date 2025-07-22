@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useUser } from '@/components/AuthProvider'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { createSupabaseBrowser } from '@/utils/supabase'
+import { supabase } from '@/utils/supabase'
 import CreateProjectModal from '@/components/dashboard/CreateProjectModal'
 import ProjectDetailsModal from '@/components/dashboard/ProjectDetailsModal'
 import QuickStatsCard from '@/components/dashboard/QuickStatsCard'
@@ -71,7 +71,7 @@ function ProjectsDashboardPage() {
       let sessionError = null
       
       // Create browser client for this request
-      const supabase = createSupabaseBrowser()
+      // Using singleton supabase client
       
       // Method 1: Get current session
       const { data: { session: currentSession }, error: currentError } = await supabase.auth.getSession()
@@ -172,7 +172,7 @@ function ProjectsDashboardPage() {
                 <>
                   <button 
                     onClick={async () => {
-                      const supabase = createSupabaseBrowser()
+                      // Using singleton supabase client
                       await supabase.auth.signOut()
                       window.location.href = '/login'
                     }}

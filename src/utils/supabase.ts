@@ -1,25 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
 import { createBrowserClient, createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
+import type { Database } from '@/types/database';
 
 // Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-url.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
-// Legacy client for backward compatibility (non-auth features)
-// Note: This should be phased out in favor of createSupabaseBrowser() for SSR compatibility
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Singleton client for browser-side usage
-let browserClient: ReturnType<typeof createBrowserClient> | null = null;
-
-// Client-side Supabase client for React components (singleton pattern)
-export function createSupabaseBrowser() {
-  if (!browserClient) {
-    browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
-  }
-  return browserClient;
-}
+// Singleton browser client - SINGLE SOURCE OF TRUTH for browser-side operations
+export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // Middleware Supabase client
 export function createSupabaseMiddleware(request: NextRequest) {

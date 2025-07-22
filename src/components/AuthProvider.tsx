@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
-import { createSupabaseBrowser } from '@/utils/supabase';
+import { supabase } from '@/utils/supabase';
 
 type UserProfile = {
   id: string;
@@ -39,7 +39,7 @@ export function useAuth() {
 }
 
 // Create Supabase client outside component to avoid recreation on every render
-const supabase = createSupabaseBrowser();
+// Using singleton supabase client imported from utils
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

@@ -107,6 +107,11 @@ export const navigationConfig: NavigationConfig = {
       description: 'User management (Admin only)'
     },
     {
+      name: 'Clients',
+      href: '/dashboard/clients',
+      description: 'Client companies and contacts (Admin only)'
+    },
+    {
       name: 'Profile',
       href: '/profile', 
       description: 'Account settings'

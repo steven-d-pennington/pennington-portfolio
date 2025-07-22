@@ -111,19 +111,26 @@ export default function Navigation() {
             ))}
             
             {/* Protected items for authenticated users */}
-            {user && protectedNavItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive(item.href)
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {user && protectedNavItems.map((item) => {
+              // Hide Users and Clients links from non-admin users
+              if ((item.href === '/dashboard/users' || item.href === '/dashboard/clients') && userProfile?.role !== 'admin') {
+                return null;
+              }
+              
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive(item.href)
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
             
             <ThemeToggle />
             
@@ -267,20 +274,27 @@ export default function Navigation() {
             ))}
             
             {/* Protected items for authenticated users */}
-            {user && protectedNavItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                  isActive(item.href)
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {user && protectedNavItems.map((item) => {
+              // Hide Users and Clients links from non-admin users
+              if ((item.href === '/dashboard/users' || item.href === '/dashboard/clients') && userProfile?.role !== 'admin') {
+                return null;
+              }
+              
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    isActive(item.href)
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
             
             {/* Mobile Auth Section */}
             <div className="border-t border-gray-200 pt-3 mt-3">

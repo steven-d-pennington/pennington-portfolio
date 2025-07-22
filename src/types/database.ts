@@ -4,6 +4,100 @@
 export type Database = {
   public: {
     Tables: {
+      client_companies: {
+        Row: {
+          id: string
+          company_name: string
+          industry: string | null
+          website: string | null
+          address: string | null
+          phone: string | null
+          email: string | null
+          billing_address: string | null
+          tax_id: string | null
+          status: 'active' | 'inactive' | 'prospect'
+          owner_contact_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_name: string
+          industry?: string | null
+          website?: string | null
+          address?: string | null
+          phone?: string | null
+          email?: string | null
+          billing_address?: string | null
+          tax_id?: string | null
+          status?: 'active' | 'inactive' | 'prospect'
+          owner_contact_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_name?: string
+          industry?: string | null
+          website?: string | null
+          address?: string | null
+          phone?: string | null
+          email?: string | null
+          billing_address?: string | null
+          tax_id?: string | null
+          status?: 'active' | 'inactive' | 'prospect'
+          owner_contact_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      client_contacts: {
+        Row: {
+          id: string
+          client_company_id: string
+          full_name: string
+          email: string
+          phone: string | null
+          title: string | null
+          department: string | null
+          role: 'owner' | 'tech' | 'media' | 'finance' | 'member'
+          is_primary_contact: boolean
+          is_billing_contact: boolean
+          can_manage_team: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_company_id: string
+          full_name: string
+          email: string
+          phone?: string | null
+          title?: string | null
+          department?: string | null
+          role?: 'owner' | 'tech' | 'media' | 'finance' | 'member'
+          is_primary_contact?: boolean
+          is_billing_contact?: boolean
+          can_manage_team?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_company_id?: string
+          full_name?: string
+          email?: string
+          phone?: string | null
+          title?: string | null
+          department?: string | null
+          role?: 'owner' | 'tech' | 'media' | 'finance' | 'member'
+          is_primary_contact?: boolean
+          is_billing_contact?: boolean
+          can_manage_team?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
       user_invitations: {
         Row: {
           id: string
@@ -464,6 +558,8 @@ export type Database = {
 }
 
 // Convenience types for common database operations
+export type ClientCompany = Database['public']['Tables']['client_companies']['Row']
+export type ClientContact = Database['public']['Tables']['client_contacts']['Row']
 export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type Project = Database['public']['Tables']['projects']['Row']
 export type ProjectMember = Database['public']['Tables']['project_members']['Row']
@@ -475,6 +571,8 @@ export type GitHubEvent = Database['public']['Tables']['github_webhook_events'][
 export type ProjectUpdate = Database['public']['Tables']['project_updates']['Row']
 
 // Insert types
+export type ClientCompanyInsert = Database['public']['Tables']['client_companies']['Insert']
+export type ClientContactInsert = Database['public']['Tables']['client_contacts']['Insert']
 export type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert']
 export type ProjectInsert = Database['public']['Tables']['projects']['Insert']
 export type ProjectMemberInsert = Database['public']['Tables']['project_members']['Insert']
@@ -486,6 +584,8 @@ export type GitHubEventInsert = Database['public']['Tables']['github_webhook_eve
 export type ProjectUpdateInsert = Database['public']['Tables']['project_updates']['Insert']
 
 // Update types
+export type ClientCompanyUpdate = Database['public']['Tables']['client_companies']['Update']
+export type ClientContactUpdate = Database['public']['Tables']['client_contacts']['Update']
 export type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
 export type ProjectUpdateType = Database['public']['Tables']['projects']['Update']
 export type ProjectMemberUpdate = Database['public']['Tables']['project_members']['Update']
@@ -501,7 +601,43 @@ export type ProjectStatus = Database['public']['Enums']['project_status']
 export type InvoiceStatus = Database['public']['Enums']['invoice_status']
 export type PaymentMethod = Database['public']['Enums']['payment_method']
 export type TimeEntryType = Database['public']['Enums']['time_entry_type']
-export type UserRole = 'user' | 'admin' | 'moderator' | 'client' | 'team_member'
+export type UserRole = 'user' | 'admin' | 'moderator' | 'team_member' // Removed 'client' - now separate
+export type ClientRole = 'owner' | 'tech' | 'media' | 'finance' | 'member'
+export type CompanyStatus = 'active' | 'inactive' | 'prospect'
+
+// Combined types for common operations
+export type ClientCompanyWithOwner = ClientCompany & {
+  owner_contact?: ClientContact | null
+}
+
+export type ClientContactWithCompany = ClientContact & {
+  company?: ClientCompany | null
+}
+
+export type ClientCompanyWithContacts = ClientCompany & {
+  contacts?: ClientContact[]
+}
+
+// Form types for creating new clients
+export type CreateClientCompanyWithOwnerForm = {
+  // Company details
+  company_name: string
+  industry?: string
+  website?: string
+  address?: string
+  phone?: string
+  email?: string
+  billing_address?: string
+  tax_id?: string
+  status?: CompanyStatus
+  
+  // Owner contact details
+  owner_full_name: string
+  owner_email: string
+  owner_phone?: string
+  owner_title?: string
+  owner_department?: string
+}
 
 // Extended types with relations for common queries
 export interface ProjectWithClient extends Project {

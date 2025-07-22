@@ -1,10 +1,10 @@
 // Database utilities for Client Dashboard
-import { createSupabaseBrowser } from '@/utils/supabase'
+import { supabase } from '@/utils/supabase'
 import { supabaseAdmin } from '@/lib/server-database'
 import type { Database, ProjectWithClient, TimeEntryWithProject, InvoiceWithProject, Project, TimeEntry, Invoice, InvoiceLineItem } from '@/types/database'
 
-// Use the singleton browser client
-export const supabase = createSupabaseBrowser()
+// Re-export singleton browser client
+export { supabase }
 
 // Re-export admin client from server-database
 export { supabaseAdmin }
