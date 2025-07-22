@@ -4,6 +4,56 @@
 export type Database = {
   public: {
     Tables: {
+      user_invitations: {
+        Row: {
+          id: string
+          email: string
+          full_name: string
+          role: 'user' | 'admin' | 'moderator' | 'client' | 'team_member'
+          company_name: string | null
+          phone: string | null
+          address: string | null
+          timezone: string
+          invited_by: string
+          invitation_token: string
+          expires_at: string
+          created_at: string
+          accepted_at: string | null
+          status: 'pending' | 'accepted' | 'expired' | 'cancelled'
+        }
+        Insert: {
+          id?: string
+          email: string
+          full_name: string
+          role: 'user' | 'admin' | 'moderator' | 'client' | 'team_member'
+          company_name?: string | null
+          phone?: string | null
+          address?: string | null
+          timezone?: string
+          invited_by: string
+          invitation_token?: string
+          expires_at?: string
+          created_at?: string
+          accepted_at?: string | null
+          status?: 'pending' | 'accepted' | 'expired' | 'cancelled'
+        }
+        Update: {
+          id?: string
+          email?: string
+          full_name?: string
+          role?: 'user' | 'admin' | 'moderator' | 'client' | 'team_member'
+          company_name?: string | null
+          phone?: string | null
+          address?: string | null
+          timezone?: string
+          invited_by?: string
+          invitation_token?: string
+          expires_at?: string
+          created_at?: string
+          accepted_at?: string | null
+          status?: 'pending' | 'accepted' | 'expired' | 'cancelled'
+        }
+      }
       user_profiles: {
         Row: {
           id: string

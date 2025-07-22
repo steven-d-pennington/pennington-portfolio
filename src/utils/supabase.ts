@@ -7,11 +7,18 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
 // Legacy client for backward compatibility (non-auth features)
+// Note: This should be phased out in favor of createSupabaseBrowser() for SSR compatibility
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Client-side Supabase client for React components
+// Singleton client for browser-side usage
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
+
+// Client-side Supabase client for React components (singleton pattern)
 export function createSupabaseBrowser() {
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  if (!browserClient) {
+    browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  }
+  return browserClient;
 }
 
 // Middleware Supabase client
