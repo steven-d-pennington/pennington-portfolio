@@ -16,6 +16,8 @@
     "seed:clear": "tsx scripts/seed-database.ts --clear-only"
   },
   "dependencies": {
+    "@react-email/components": "^0.3.2",
+    "@react-email/render": "^1.1.3",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.3",
     "@vercel/analytics": "^1.5.0",
@@ -23,7 +25,8 @@
     "next": "15.3.5",
     "nodemailer": "^7.0.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^4.7.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

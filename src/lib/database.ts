@@ -1,7 +1,7 @@
 // Database utilities for Client Dashboard
 import { createSupabaseBrowser } from '@/utils/supabase'
 import { supabaseAdmin } from '@/lib/server-database'
-import type { Database, ProjectWithClient, TimeEntryWithProject, InvoiceWithProject } from '@/types/database'
+import type { Database, ProjectWithClient, TimeEntryWithProject, InvoiceWithProject, Project, TimeEntry, Invoice, InvoiceLineItem } from '@/types/database'
 
 // Use the singleton browser client
 export const supabase = createSupabaseBrowser()
@@ -394,7 +394,7 @@ export class DatabaseService {
       const { data: projects } = await projectQuery
       if (projects) {
         stats.totalProjects = projects.length
-        stats.activeProjects = projects.filter(p => p.status === 'active').length
+        stats.activeProjects = projects.filter((p: Project) => p.status === 'active').length
       }
 
       // Get time tracking stats
@@ -403,12 +403,12 @@ export class DatabaseService {
         .select('hours_worked, is_billable, hourly_rate')
 
       if (!isAdmin) {
-        timeQuery = timeQuery.in('project_id', projects?.map(p => p.id) || [])
+        timeQuery = timeQuery.in('project_id', projects?.map((p: Project) => p.id) || [])
       }
 
       const { data: timeEntries } = await timeQuery
       if (timeEntries) {
-        stats.totalHoursWorked = timeEntries.reduce((sum, entry) => sum + entry.hours_worked, 0)
+        stats.totalHoursWorked = timeEntries.reduce((sum: number, entry: TimeEntry) => sum + entry.hours_worked, 0)
       }
 
       // Get invoice stats
@@ -422,10 +422,10 @@ export class DatabaseService {
 
       const { data: invoices } = await invoiceQuery
       if (invoices) {
-        stats.outstandingInvoices = invoices.filter(i => i.status === 'sent').length
+        stats.outstandingInvoices = invoices.filter((i: Invoice) => i.status === 'sent').length
         stats.totalRevenue = invoices
-          .filter(i => i.status === 'paid')
-          .reduce((sum, invoice) => sum + invoice.total_amount, 0)
+          .filter((i: Invoice) => i.status === 'paid')
+          .reduce((sum: number, invoice: Invoice) => sum + invoice.total_amount, 0)
       }
 
       return stats
@@ -489,7 +489,7 @@ export const formatHours = (hours: number) => {
   return `${wholeHours}h ${minutes}m`
 }
 
-export const calculateInvoiceTotal = (lineItems: any[]) => {
-  const subtotal = lineItems.reduce((sum, item) => sum + item.total_price, 0)
+export const calculateInvoiceTotal = (lineItems: InvoiceLineItem[]) => {
+  const subtotal = lineItems.reduce((sum: number, item: InvoiceLineItem) => sum + item.total_price, 0)
   return subtotal
 }
