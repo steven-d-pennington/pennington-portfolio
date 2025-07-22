@@ -1,0 +1,5 @@
+fix: Adjust navigation spacing
+
+Increased spacing between navigation items and authentication buttons in `src/components/Navigation.tsx` for better visual separation.
+- Increased `space-x-8` to `space-x-12` for main desktop navigation links.
+- Increased `space-x-4` to `space-x-6` for authentication buttons.

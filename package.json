@@ -4,17 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "dev:safe": "next dev",
     "build": "next build --turbo",
     "build:webpack": "next build",
     "start": "next start",
     "lint": "next lint",
     "dev:host": "next dev --turbo -p 12000 -H 0.0.0.0",
     "test:supabase": "node test-supabase.js",
-    "test:chat": "node test-chat-api.js"
+    "test:chat": "node test-chat-api.js",
+    "seed": "tsx scripts/seed-database.ts",
+    "seed:clear": "tsx scripts/seed-database.ts --clear-only"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.3",
+    "@vercel/analytics": "^1.5.0",
     "dotenv": "^17.2.0",
     "next": "15.3.5",
     "nodemailer": "^7.0.5",
@@ -35,6 +39,7 @@
     "imagemin-pngquant": "^10.0.0",
     "imagemin-webp": "^8.0.0",
     "tailwindcss": "^4",
+    "tsx": "^4.7.0",
     "typescript": "^5"
   }
 }

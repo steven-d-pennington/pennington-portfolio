@@ -1,0 +1,4 @@
+id,email,full_name,avatar_url,role,created_at,updated_at,company_name,phone,address,timezone
+2fc7d3d3-d5a0-4ae2-9abf-9b0dd9311c63,steve.d.pennington@gmail.com,Steven P,,user,2025-07-22 15:14:45.75+00,2025-07-22 15:14:45.75+00,,,,UTC
+ee60f3d0-fc60-41bd-bbdb-d4e920f16922,stevepenn@hotmail.com,Steven Penn,,user,2025-07-22 15:14:01.612956+00,2025-07-22 15:14:01.612956+00,,,,UTC
+f0b91f28-6b28-467a-bd1b-f9e1058a0d55,steven@spennington.dev,Steven Pennington,,admin,2025-07-20 00:46:27.414+00,2025-07-21 21:15:01.570628+00,,,,UTC
