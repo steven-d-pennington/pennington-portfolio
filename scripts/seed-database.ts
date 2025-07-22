@@ -65,7 +65,7 @@ const randomFutureDate = (daysFromNow: number): string => {
   return date.toISOString()
 }
 
-const randomFromArray = <T>(array: T[]): T => {
+const randomFromArray = <T>(array: readonly T[]): T => {
   return array[Math.floor(Math.random() * array.length)]
 }
 
@@ -253,7 +253,8 @@ const TIME_ENTRY_DESCRIPTIONS = {
   ]
 }
 
-const PROJECT_UPDATE_TYPES = ['milestone', 'progress', 'issue', 'completion', 'change_request']
+const PROJECT_UPDATE_TYPES = ['milestone', 'progress', 'issue', 'completion', 'change_request'] as const
+type ProjectUpdateType = typeof PROJECT_UPDATE_TYPES[number]
 
 async function clearExistingData() {
   console.log('🧹 Clearing existing test data...')
@@ -405,10 +406,10 @@ async function seedProjectUpdates(projects: any[], users: any[]) {
     const updateCount = Math.floor(Math.random() * 6) + 2
     
     for (let i = 0; i < updateCount; i++) {
-      const updateType = randomFromArray(PROJECT_UPDATE_TYPES)
+      const updateType: ProjectUpdateType = randomFromArray(PROJECT_UPDATE_TYPES)
       const authorId = EXISTING_USERS.ADMIN // Steven Pennington as author
       
-      const updateTitles = {
+      const updateTitles: Record<ProjectUpdateType, string[]> = {
         milestone: [`${project.name} - Phase ${i + 1} Complete`, `Milestone: ${randomFromArray(['MVP', 'Beta', 'Testing', 'Deployment'])} Reached`],
         progress: [`Weekly Progress Update - Week ${i + 1}`, `Development Update: ${randomFromArray(['Frontend', 'Backend', 'Database', 'API'])} Progress`],
         issue: [`Issue Resolved: ${randomFromArray(['Performance', 'Security', 'UI/UX', 'Integration'])}`, `Bug Fix: Critical ${randomFromArray(['Login', 'Payment', 'Data', 'Mobile'])} Issue`],
@@ -416,7 +417,7 @@ async function seedProjectUpdates(projects: any[], users: any[]) {
         change_request: [`Scope Change: ${randomFromArray(['Additional Features', 'Design Updates', 'Technical Changes'])}`, `Client Request: ${randomFromArray(['New Requirements', 'Timeline Adjustment', 'Feature Modification'])}`]
       }
       
-      const updateContent = {
+      const updateContent: Record<ProjectUpdateType, string> = {
         milestone: 'Successfully completed major project milestone. All deliverables met quality standards and client approval received.',
         progress: 'Steady progress on development tasks. Team velocity is on track with project timeline. No major blockers identified.',
         issue: 'Identified and resolved critical issue that was impacting system performance. Implemented fix and verified resolution through testing.',
@@ -511,7 +512,7 @@ async function seedInvoicesAndPayments(projects: any[], timeEntries: TimeEntryIn
       const taxAmount = subtotal * taxRate
       const totalAmount = subtotal + taxAmount
       
-      const invoiceStatus = randomFromArray(['paid', 'paid', 'sent', 'overdue'] as const)
+      const invoiceStatus = randomFromArray(['paid', 'paid', 'sent', 'overdue', 'draft'] as const)
       
       invoices.push({
         id: invoiceId,
