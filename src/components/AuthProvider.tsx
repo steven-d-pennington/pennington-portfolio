@@ -38,13 +38,14 @@ export function useAuth() {
   return context;
 }
 
+// Create Supabase client outside component to avoid recreation on every render
+const supabase = createSupabaseBrowser();
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  const supabase = createSupabaseBrowser();
 
   // Fetch user profile from database
   const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error fetching user profile:', error);
       return null;
     }
-  }, [supabase]);
+  }, []);
 
   // Create user profile after successful signup
   const createUserProfile = useCallback(async (user: User): Promise<void> => {
@@ -90,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error creating user profile:', error);
     }
-  }, [supabase]);
+  }, []);
 
   // Initialize auth state
   useEffect(() => {
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: string, session: Session | null) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
         setSession(session);
@@ -149,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, createUserProfile, supabase.auth]);
+  }, [fetchUserProfile, createUserProfile]);
 
   // Authentication methods
   const signUp = async (email: string, password: string, options?: { data?: Record<string, unknown> }) => {
