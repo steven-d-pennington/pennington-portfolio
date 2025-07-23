@@ -47,30 +47,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile from database
+  // Fetch user profile from database via API (bypasses RLS issues)
   const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       console.log('Fetching user profile for userId:', userId);
       
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', {
-          error,
-          errorCode: error.code,
-          errorMessage: error.message,
-          errorDetails: error.details,
+      const response = await fetch('/api/auth/profile');
+      
+      if (!response.ok) {
+        console.error('Error fetching user profile via API:', {
+          status: response.status,
+          statusText: response.statusText,
           userId
         });
         return null;
       }
 
-      console.log('Successfully fetched user profile:', data?.email);
-      return data as UserProfile;
+      const result = await response.json();
+      
+      if (result.error) {
+        console.error('API returned error:', result.error, 'userId:', userId);
+        return null;
+      }
+
+      console.log('Successfully fetched user profile:', result.profile?.email);
+      return result.profile as UserProfile;
     } catch (error) {
       console.error('Error fetching user profile (catch block):', error, 'userId:', userId);
       return null;
