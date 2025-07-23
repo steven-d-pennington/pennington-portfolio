@@ -15,7 +15,9 @@
     "seed": "tsx scripts/seed-database.ts",
     "seed:clear": "tsx scripts/seed-database.ts --clear-only",
     "seed:test": "node scripts/seed-test-data.js",
-    "seed:test-cleanup": "node scripts/seed-test-data.js cleanup"
+    "seed:test-cleanup": "node scripts/seed-test-data.js cleanup",
+    "migrate:projects": "node scripts/migrate-projects-to-client-companies.js",
+    "migrate:projects-rollback": "node scripts/migrate-projects-to-client-companies.js rollback"
   },
   "dependencies": {
     "@react-email/components": "^0.3.2",
