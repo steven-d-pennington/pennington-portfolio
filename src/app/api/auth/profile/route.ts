@@ -1,11 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/utils/supabase';
+import { createServerClient } from '@supabase/ssr';
 import { supabaseAdmin } from '@/lib/server-database';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
+    const cookieStore = cookies();
+    
+    // Create server client that can read cookies
+    const supabaseServer = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
+    
     // Get the current session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const { data: { session }, error: sessionError } = await supabaseServer.auth.getSession();
     
     if (sessionError || !session) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

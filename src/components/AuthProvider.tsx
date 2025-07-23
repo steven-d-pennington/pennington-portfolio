@@ -52,7 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Fetching user profile for userId:', userId);
       
-      const response = await fetch('/api/auth/profile');
+      // Get current session for auth
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch('/api/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (!response.ok) {
         console.error('Error fetching user profile via API:', {
@@ -147,10 +155,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Fetch user profile
           let profile = await fetchUserProfile(session.user.id);
           if (!profile) {
-            console.log('Profile not found, creating new profile for user:', session.user.email);
-            // If profile doesn't exist, create it (e.g., for OAuth sign-ins)
-            await createUserProfile(session.user);
-            profile = await fetchUserProfile(session.user.id); // Fetch again after creation
+            console.log('Profile not found, attempting to create new profile for user:', session.user.email);
+            try {
+              // If profile doesn't exist, create it (e.g., for OAuth sign-ins)
+              await createUserProfile(session.user);
+              profile = await fetchUserProfile(session.user.id); // Fetch again after creation
+            } catch (createError) {
+              console.log('Profile creation failed (may already exist), retrying fetch:', createError);
+              // Profile might have been created by another process, try fetching again
+              profile = await fetchUserProfile(session.user.id);
+            }
           }
           setUserProfile(profile);
         } else {
