@@ -13,7 +13,9 @@
     "test:supabase": "node test-supabase.js",
     "test:chat": "node test-chat-api.js",
     "seed": "tsx scripts/seed-database.ts",
-    "seed:clear": "tsx scripts/seed-database.ts --clear-only"
+    "seed:clear": "tsx scripts/seed-database.ts --clear-only",
+    "seed:test": "node scripts/seed-test-data.js",
+    "seed:test-cleanup": "node scripts/seed-test-data.js cleanup"
   },
   "dependencies": {
     "@react-email/components": "^0.3.2",
