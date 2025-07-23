@@ -1,196 +1,196 @@
--- Client System Migration: Separate clients from users
--- This creates a proper business entity structure for client management
+-- client system migration: separate clients from users
+-- this creates a proper business entity structure for client management
 
--- 1. Create client_companies table
-CREATE TABLE IF NOT EXISTS client_companies (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    company_name TEXT NOT NULL,
-    industry TEXT,
-    website TEXT,
-    address TEXT,
-    phone TEXT,
-    email TEXT, -- Main company email
-    billing_address TEXT,
-    tax_id TEXT,
-    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'prospect')),
-    owner_contact_id UUID, -- Will reference client_contacts(id) - set after contact creation
-    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+-- 1. create client_companies table
+create table if not exists client_companies (
+    id uuid default gen_random_uuid() primary key,
+    company_name text not null,
+    industry text,
+    website text,
+    address text,
+    phone text,
+    email text, -- main company email
+    billing_address text,
+    tax_id text,
+    status text not null default 'active' check (status in ('active', 'inactive', 'prospect')),
+    owner_contact_id uuid, -- will reference client_contacts(id) - set after contact creation
+    created_at timestamptz default now() not null,
+    updated_at timestamptz default now() not null
 );
 
--- 2. Create client_contacts table  
-CREATE TABLE IF NOT EXISTS client_contacts (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    client_company_id UUID NOT NULL REFERENCES client_companies(id) ON DELETE CASCADE,
-    full_name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
-    phone TEXT,
-    title TEXT, -- Job title
-    department TEXT,
-    role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'tech', 'media', 'finance', 'member')),
-    is_primary_contact BOOLEAN DEFAULT false,
-    is_billing_contact BOOLEAN DEFAULT false,
-    can_manage_team BOOLEAN DEFAULT false, -- Only owner + system admins can add contacts
-    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+-- 2. create client_contacts table  
+create table if not exists client_contacts (
+    id uuid default gen_random_uuid() primary key,
+    client_company_id uuid not null references client_companies(id) on delete cascade,
+    full_name text not null,
+    email text not null unique,
+    phone text,
+    title text, -- job title
+    department text,
+    role text not null default 'member' check (role in ('owner', 'tech', 'media', 'finance', 'member')),
+    is_primary_contact boolean default false,
+    is_billing_contact boolean default false,
+    can_manage_team boolean default false, -- only owner + system admins can add contacts
+    created_at timestamptz default now() not null,
+    updated_at timestamptz default now() not null
 );
 
--- 3. Add foreign key constraint from companies back to owner contact
-ALTER TABLE client_companies 
-ADD CONSTRAINT fk_owner_contact 
-FOREIGN KEY (owner_contact_id) REFERENCES client_contacts(id);
+-- 3. add foreign key constraint from companies back to owner contact
+alter table client_companies 
+add constraint fk_owner_contact 
+foreign key (owner_contact_id) references client_contacts(id);
 
--- 4. Create indexes for performance
-CREATE INDEX IF NOT EXISTS idx_client_companies_status ON client_companies(status);
-CREATE INDEX IF NOT EXISTS idx_client_companies_company_name ON client_companies(company_name);
-CREATE INDEX IF NOT EXISTS idx_client_contacts_company_id ON client_contacts(client_company_id);
-CREATE INDEX IF NOT EXISTS idx_client_contacts_email ON client_contacts(email);
-CREATE INDEX IF NOT EXISTS idx_client_contacts_role ON client_contacts(role);
+-- 4. create indexes for performance
+create index if not exists idx_client_companies_status on client_companies(status);
+create index if not exists idx_client_companies_company_name on client_companies(company_name);
+create index if not exists idx_client_contacts_company_id on client_contacts(client_company_id);
+create index if not exists idx_client_contacts_email on client_contacts(email);
+create index if not exists idx_client_contacts_role on client_contacts(role);
 
--- 5. Add column to projects table to reference client companies
-ALTER TABLE projects 
-ADD COLUMN IF NOT EXISTS client_company_id UUID REFERENCES client_companies(id);
+-- 5. add column to projects table to reference client companies
+alter table projects 
+add column if not exists client_company_id uuid references client_companies(id);
 
--- 6. Create index for project-client relationship
-CREATE INDEX IF NOT EXISTS idx_projects_client_company_id ON projects(client_company_id);
+-- 6. create index for project-client relationship
+create index if not exists idx_projects_client_company_id on projects(client_company_id);
 
--- 7. Row Level Security (RLS) Policies
-ALTER TABLE client_companies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE client_contacts ENABLE ROW LEVEL SECURITY;
+-- 7. row level security (rls) policies
+alter table client_companies enable row level security;
+alter table client_contacts enable row level security;
 
--- Policy: System admins can see all client companies
-CREATE POLICY "System admins can view all client companies" 
-ON client_companies FOR SELECT 
-TO authenticated 
-USING (
-    EXISTS (
-        SELECT 1 FROM user_profiles 
-        WHERE user_profiles.id = auth.uid() 
-        AND user_profiles.role IN ('admin', 'team_member')
+-- policy: system admins can see all client companies
+create policy "system admins can view all client companies" 
+on client_companies for select 
+to authenticated 
+using (
+    exists (
+        select 1 from user_profiles 
+        where user_profiles.id = auth.uid() 
+        and user_profiles.role in ('admin', 'team_member')
     )
 );
 
--- Policy: System admins can manage all client companies
-CREATE POLICY "System admins can manage client companies" 
-ON client_companies FOR ALL 
-TO authenticated 
-USING (
-    EXISTS (
-        SELECT 1 FROM user_profiles 
-        WHERE user_profiles.id = auth.uid() 
-        AND user_profiles.role IN ('admin', 'team_member')
+-- policy: system admins can manage all client companies
+create policy "system admins can manage client companies" 
+on client_companies for all 
+to authenticated 
+using (
+    exists (
+        select 1 from user_profiles 
+        where user_profiles.id = auth.uid() 
+        and user_profiles.role in ('admin', 'team_member')
     )
 );
 
--- Policy: System admins can see all client contacts
-CREATE POLICY "System admins can view all client contacts" 
-ON client_contacts FOR SELECT 
-TO authenticated 
-USING (
-    EXISTS (
-        SELECT 1 FROM user_profiles 
-        WHERE user_profiles.id = auth.uid() 
-        AND user_profiles.role IN ('admin', 'team_member')
+-- policy: system admins can see all client contacts
+create policy "system admins can view all client contacts" 
+on client_contacts for select 
+to authenticated 
+using (
+    exists (
+        select 1 from user_profiles 
+        where user_profiles.id = auth.uid() 
+        and user_profiles.role in ('admin', 'team_member')
     )
 );
 
--- Policy: System admins can manage all client contacts
-CREATE POLICY "System admins can manage all client contacts" 
-ON client_contacts FOR ALL 
-TO authenticated 
-USING (
-    EXISTS (
-        SELECT 1 FROM user_profiles 
-        WHERE user_profiles.id = auth.uid() 
-        AND user_profiles.role IN ('admin', 'team_member')
+-- policy: system admins can manage all client contacts
+create policy "system admins can manage all client contacts" 
+on client_contacts for all 
+to authenticated 
+using (
+    exists (
+        select 1 from user_profiles 
+        where user_profiles.id = auth.uid() 
+        and user_profiles.role in ('admin', 'team_member')
     )
 );
 
--- Policy: Client contacts can only see contacts from their own company
--- (This will be used when we add client dashboard access later)
-CREATE POLICY "Client contacts can view own company contacts" 
-ON client_contacts FOR SELECT 
-TO authenticated 
-USING (
-    -- Allow if user is a client contact viewing their own company
-    client_company_id IN (
-        SELECT cc.client_company_id 
-        FROM client_contacts cc 
-        JOIN user_profiles up ON cc.email = up.email 
-        WHERE up.id = auth.uid()
+-- policy: client contacts can only see contacts from their own company
+-- (this will be used when we add client dashboard access later)
+create policy "client contacts can view own company contacts" 
+on client_contacts for select 
+to authenticated 
+using (
+    -- allow if user is a client contact viewing their own company
+    client_company_id in (
+        select cc.client_company_id 
+        from client_contacts cc 
+        join user_profiles up on cc.email = up.email 
+        where up.id = auth.uid()
     )
 );
 
--- Policy: Only company owners can add new contacts to their company
--- (This will be used when we add client dashboard access later)
-CREATE POLICY "Company owners can manage their team" 
-ON client_contacts FOR INSERT 
-TO authenticated 
-WITH CHECK (
-    -- Allow if user is the company owner
-    client_company_id IN (
-        SELECT cc.client_company_id 
-        FROM client_contacts cc 
-        JOIN user_profiles up ON cc.email = up.email 
-        WHERE up.id = auth.uid() 
-        AND cc.can_manage_team = true
+-- policy: only company owners can add new contacts to their company
+-- (this will be used when we add client dashboard access later)
+create policy "company owners can manage their team" 
+on client_contacts for insert 
+to authenticated 
+with check (
+    -- allow if user is the company owner
+    client_company_id in (
+        select cc.client_company_id 
+        from client_contacts cc 
+        join user_profiles up on cc.email = up.email 
+        where up.id = auth.uid() 
+        and cc.can_manage_team = true
     )
 );
 
--- 8. Functions for maintaining data integrity
+-- 8. functions for maintaining data integrity
 
--- Function to automatically set owner as team manager
-CREATE OR REPLACE FUNCTION set_owner_as_team_manager()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- If this is an owner role, set can_manage_team to true
-    IF NEW.role = 'owner' THEN
-        NEW.can_manage_team = true;
-    END IF;
+-- function to automatically set owner as team manager
+create or replace function set_owner_as_team_manager()
+returns trigger as $$
+begin
+    -- if this is an owner role, set can_manage_team to true
+    if new.role = 'owner' then
+        new.can_manage_team = true;
+    end if;
     
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+    return new;
+end;
+$$ language plpgsql;
 
--- Trigger to automatically set team management for owners
-CREATE TRIGGER trigger_set_owner_as_team_manager
-    BEFORE INSERT OR UPDATE ON client_contacts
-    FOR EACH ROW
-    EXECUTE FUNCTION set_owner_as_team_manager();
+-- trigger to automatically set team management for owners
+create trigger trigger_set_owner_as_team_manager
+    before insert or update on client_contacts
+    for each row
+    execute function set_owner_as_team_manager();
 
--- Function to ensure only one owner per company
-CREATE OR REPLACE FUNCTION enforce_single_owner_per_company()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Check if we're trying to create another owner for the same company
-    IF NEW.role = 'owner' AND EXISTS (
-        SELECT 1 FROM client_contacts 
-        WHERE client_company_id = NEW.client_company_id 
-        AND role = 'owner' 
-        AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid)
-    ) THEN
-        RAISE EXCEPTION 'A company can only have one owner. Please change the existing owner role first.';
-    END IF;
+-- function to ensure only one owner per company
+create or replace function enforce_single_owner_per_company()
+returns trigger as $$
+begin
+    -- check if we're trying to create another owner for the same company
+    if new.role = 'owner' and exists (
+        select 1 from client_contacts 
+        where client_company_id = new.client_company_id 
+        and role = 'owner' 
+        and id != coalesce(new.id, '00000000-0000-0000-0000-000000000000'::uuid)
+    ) then
+        raise exception 'a company can only have one owner. please change the existing owner role first.';
+    end if;
     
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+    return new;
+end;
+$$ language plpgsql;
 
--- Trigger to enforce single owner per company
-CREATE TRIGGER trigger_enforce_single_owner_per_company
-    BEFORE INSERT OR UPDATE ON client_contacts
-    FOR EACH ROW
-    EXECUTE FUNCTION enforce_single_owner_per_company();
+-- trigger to enforce single owner per company
+create trigger trigger_enforce_single_owner_per_company
+    before insert or update on client_contacts
+    for each row
+    execute function enforce_single_owner_per_company();
 
--- 9. Grant permissions
-GRANT SELECT, INSERT, UPDATE, DELETE ON client_companies TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON client_contacts TO authenticated;
+-- 9. grant permissions
+grant select, insert, update, delete on client_companies to authenticated;
+grant select, insert, update, delete on client_contacts to authenticated;
 
--- 10. Comments for documentation
-COMMENT ON TABLE client_companies IS 'Business entities that are clients of the company';
-COMMENT ON TABLE client_contacts IS 'Individual people at client companies with defined roles';
-COMMENT ON COLUMN client_companies.owner_contact_id IS 'References the primary owner contact for this company';
-COMMENT ON COLUMN client_contacts.can_manage_team IS 'Whether this contact can add/manage other contacts in their company';
-COMMENT ON COLUMN client_contacts.role IS 'Business role: owner (can manage team), tech, media, finance, or general member';
+-- 10. comments for documentation
+comment on table client_companies is 'business entities that are clients of the company';
+comment on table client_contacts is 'individual people at client companies with defined roles';
+comment on column client_companies.owner_contact_id is 'references the primary owner contact for this company';
+comment on column client_contacts.can_manage_team is 'whether this contact can add/manage other contacts in their company';
+comment on column client_contacts.role is 'business role: owner (can manage team), tech, media, finance, or general member';
 
--- Migration complete - Client system ready for use
+-- migration complete - client system ready for use
