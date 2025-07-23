@@ -50,6 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch user profile from database
   const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
+      console.log('Fetching user profile for userId:', userId);
+      
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -57,13 +59,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        console.error('Error fetching user profile:', error);
+        console.error('Error fetching user profile:', {
+          error,
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorDetails: error.details,
+          userId
+        });
         return null;
       }
 
+      console.log('Successfully fetched user profile:', data?.email);
       return data as UserProfile;
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error fetching user profile (catch block):', error, 'userId:', userId);
       return null;
     }
   }, []);
@@ -131,9 +140,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user || null);
 
         if (session?.user) {
+          // Add a small delay to ensure session is fully established
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
           // Fetch user profile
           let profile = await fetchUserProfile(session.user.id);
           if (!profile) {
+            console.log('Profile not found, creating new profile for user:', session.user.email);
             // If profile doesn't exist, create it (e.g., for OAuth sign-ins)
             await createUserProfile(session.user);
             profile = await fetchUserProfile(session.user.id); // Fetch again after creation
