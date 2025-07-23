@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
-import { createSupabaseBrowser } from '@/utils/supabase';
+import { supabase } from '@/utils/supabase';
 
 type UserProfile = {
   id: string;
@@ -39,7 +39,7 @@ export function useAuth() {
 }
 
 // Create Supabase client outside component to avoid recreation on every render
-const supabase = createSupabaseBrowser();
+// Using singleton supabase client imported from utils
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -47,23 +47,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile from database
+  // Fetch user profile from database via API (bypasses RLS issues)
   const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
+      console.log('Fetching user profile for userId:', userId);
+      
+      // Get current session for auth
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch('/api/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('Error fetching user profile via API:', {
+          status: response.status,
+          statusText: response.statusText,
+          userId
+        });
         return null;
       }
 
-      return data as UserProfile;
+      const result = await response.json();
+      
+      if (result.error) {
+        console.error('API returned error:', result.error, 'userId:', userId);
+        return null;
+      }
+
+      console.log('Successfully fetched user profile:', result.profile?.email);
+      return result.profile as UserProfile;
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error fetching user profile (catch block):', error, 'userId:', userId);
       return null;
     }
   }, []);
@@ -131,12 +149,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user || null);
 
         if (session?.user) {
+          // Add a small delay to ensure session is fully established
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
           // Fetch user profile
           let profile = await fetchUserProfile(session.user.id);
           if (!profile) {
-            // If profile doesn't exist, create it (e.g., for OAuth sign-ins)
-            await createUserProfile(session.user);
-            profile = await fetchUserProfile(session.user.id); // Fetch again after creation
+            console.log('Profile not found, attempting to create new profile for user:', session.user.email);
+            try {
+              // If profile doesn't exist, create it (e.g., for OAuth sign-ins)
+              await createUserProfile(session.user);
+              profile = await fetchUserProfile(session.user.id); // Fetch again after creation
+            } catch (createError) {
+              console.log('Profile creation failed (may already exist), retrying fetch:', createError);
+              // Profile might have been created by another process, try fetching again
+              profile = await fetchUserProfile(session.user.id);
+            }
           }
           setUserProfile(profile);
         } else {

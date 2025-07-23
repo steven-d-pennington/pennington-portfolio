@@ -1,10 +1,10 @@
 // Database utilities for Client Dashboard
-import { createSupabaseBrowser } from '@/utils/supabase'
+import { supabase } from '@/utils/supabase'
 import { supabaseAdmin } from '@/lib/server-database'
 import type { Database, ProjectWithClient, TimeEntryWithProject, InvoiceWithProject, Project, TimeEntry, Invoice, InvoiceLineItem } from '@/types/database'
 
-// Use the singleton browser client
-export const supabase = createSupabaseBrowser()
+// Re-export singleton browser client
+export { supabase }
 
 // Re-export admin client from server-database
 export { supabaseAdmin }
@@ -394,7 +394,7 @@ export class DatabaseService {
       const { data: projects } = await projectQuery
       if (projects) {
         stats.totalProjects = projects.length
-        stats.activeProjects = projects.filter((p: Project) => p.status === 'active').length
+        stats.activeProjects = projects.filter((p: { id: any; status: any }) => p.status === 'active').length
       }
 
       // Get time tracking stats
@@ -403,12 +403,12 @@ export class DatabaseService {
         .select('hours_worked, is_billable, hourly_rate')
 
       if (!isAdmin) {
-        timeQuery = timeQuery.in('project_id', projects?.map((p: Project) => p.id) || [])
+        timeQuery = timeQuery.in('project_id', projects?.map((p: { id: any; status: any }) => p.id) || [])
       }
 
       const { data: timeEntries } = await timeQuery
       if (timeEntries) {
-        stats.totalHoursWorked = timeEntries.reduce((sum: number, entry: TimeEntry) => sum + entry.hours_worked, 0)
+        stats.totalHoursWorked = timeEntries.reduce((sum: number, entry: { hours_worked: any; is_billable: any; hourly_rate: any }) => sum + entry.hours_worked, 0)
       }
 
       // Get invoice stats
@@ -422,10 +422,10 @@ export class DatabaseService {
 
       const { data: invoices } = await invoiceQuery
       if (invoices) {
-        stats.outstandingInvoices = invoices.filter((i: Invoice) => i.status === 'sent').length
+        stats.outstandingInvoices = invoices.filter((i: { total_amount: any; status: any }) => i.status === 'sent').length
         stats.totalRevenue = invoices
-          .filter((i: Invoice) => i.status === 'paid')
-          .reduce((sum: number, invoice: Invoice) => sum + invoice.total_amount, 0)
+          .filter((i: { total_amount: any; status: any }) => i.status === 'paid')
+          .reduce((sum: number, invoice: { total_amount: any; status: any }) => sum + invoice.total_amount, 0)
       }
 
       return stats

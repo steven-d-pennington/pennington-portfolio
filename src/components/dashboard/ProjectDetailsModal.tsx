@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@/components/AuthProvider'
-import { createSupabaseBrowser } from '@/utils/supabase'
+import { supabase } from '@/utils/supabase'
 import type { ProjectWithClient } from '@/types/database'
 
 interface ProjectDetailsModalProps {
@@ -43,7 +43,7 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
     
     setLoading(true)
     try {
-      const supabase = createSupabaseBrowser()
+      // Using singleton supabase client
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No session')
 
@@ -82,7 +82,7 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
 
     setLoading(true)
     try {
-      const supabase = createSupabaseBrowser()
+      // Using singleton supabase client
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No session')
 

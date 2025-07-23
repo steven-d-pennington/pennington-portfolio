@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@/components/AuthProvider'
-import { createSupabaseBrowser } from '@/utils/supabase'
+import { supabase } from '@/utils/supabase'
 
 interface CreateProjectModalProps {
   isOpen: boolean
@@ -38,7 +38,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
   const loadClients = async () => {
     setLoadingClients(true)
     try {
-      const supabase = createSupabaseBrowser()
+      // Using singleton supabase client
       const { data, error } = await supabase
         .from('user_profiles')
         .select('id, full_name, email, company_name')
@@ -60,7 +60,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
 
     setLoading(true)
     try {
-      const supabase = createSupabaseBrowser()
+      // Using singleton supabase client
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No session')
 
