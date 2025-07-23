@@ -26,7 +26,16 @@
       "Bash(timeout 20s npm run dev)",
       "Bash(taskkill:*)",
       "Bash(npx kill-port:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(mv:*)",
+      "Bash(move \"__tests__\\utils\\test-factories.ts\" \"__tests__\\utils\\factories.ts\")",
+      "Bash(move:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:unit:*)",
+      "Bash(npm run test:components:*)",
+      "Bash(npm run test:*)",
+      "Bash(cd \"C:\\projects\\pennington-portfolio\")",
+      "Bash(find src -name \"*user*\" -type f)"
     ],
     "deny": []
   }

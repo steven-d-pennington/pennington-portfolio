@@ -1,12 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 import { supabaseAdmin } from '@/lib/server-database';
+import { cookies } from 'next/headers';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const cookieStore = await cookies();
     const userId = params.id;
+    
+    // Create server client for session verification
+    const supabaseServer = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
+    
+    // Verify user session
+    const { data: { session }, error: sessionError } = await supabaseServer.auth.getSession();
+    if (sessionError || !session) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    // Get current user profile to check privileges
+    const { data: currentUser, error: userError } = await supabaseAdmin
+      .from('user_profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (userError || !currentUser) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+    }
+
+    // Check if user can access this profile (admin or own profile)
+    const isAdmin = currentUser.role === 'admin';
+    const isOwnProfile = session.user.id === userId;
+
+    if (!isAdmin && !isOwnProfile) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
 
     const { data: user, error } = await supabaseAdmin
       .from('user_profiles')
@@ -16,20 +57,14 @@ export async function GET(
 
     if (error) {
       console.error('Error fetching user:', error);
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     return NextResponse.json({ user });
 
   } catch (error) {
     console.error('Unexpected error in GET /api/users/[id]:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
