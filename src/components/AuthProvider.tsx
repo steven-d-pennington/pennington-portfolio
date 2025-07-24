@@ -53,33 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Fetching user profile for userId:', userId);
       
-      // Try API first with proper authentication
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          const response = await fetch('/api/auth/profile', {
-            headers: {
-              'Authorization': `Bearer ${user.access_token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (response.ok) {
-            const result = await response.json();
-            if (!result.error && result.profile) {
-              console.log('Successfully fetched user profile via API:', result.profile?.email);
-              return result.profile as UserProfile;
-            }
-          }
-        }
-        
-        console.log('API approach failed, trying direct database query');
-      } catch (apiError) {
-        console.log('API fetch failed, falling back to direct query:', apiError);
-      }
-      
-      // Fallback: Direct database query with RLS (should work for user's own profile)
+      // Direct database query with RLS (should work for user's own profile)
       const { data: profile, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -128,23 +102,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Get initial user (secure method)
-        const { data: { user }, error } = await supabase.auth.getUser();
+        // Start with session to check if user is logged in
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error('Error getting user:', error);
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
           return;
         }
 
-        if (user) {
-          // Get session for session state
-          const { data: { session } } = await supabase.auth.getSession();
-          setSession(session);
-          setUser(user);
-          
-          // Fetch user profile
-          const profile = await fetchUserProfile(user.id);
-          setUserProfile(profile);
+        if (session && session.user) {
+          // If we have a session, verify with getUser() for security
+          try {
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            
+            if (userError || !user) {
+              console.log('Session exists but user verification failed, clearing session');
+              await supabase.auth.signOut();
+              return;
+            }
+
+            setSession(session);
+            setUser(user);
+            
+            // Fetch user profile
+            const profile = await fetchUserProfile(user.id);
+            setUserProfile(profile);
+          } catch (userError) {
+            console.log('User verification failed, using session user:', userError);
+            // Fallback to session user if getUser() fails
+            setSession(session);
+            setUser(session.user);
+            
+            const profile = await fetchUserProfile(session.user.id);
+            setUserProfile(profile);
+          }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -167,7 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Add a small delay to ensure session is fully established
           await new Promise(resolve => setTimeout(resolve, 100));
           
-          // Fetch user profile
+          // For auth state changes, we can trust the session user
+          // since this is triggered by actual auth events
           let profile = await fetchUserProfile(session.user.id);
           if (!profile) {
             console.log('Profile not found, attempting to create new profile for user:', session.user.email);
