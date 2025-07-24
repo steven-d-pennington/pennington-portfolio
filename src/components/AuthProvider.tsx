@@ -48,39 +48,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile from database via API (bypasses RLS issues)
+  // Fetch user profile from database directly (fallback if API fails)
   const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       console.log('Fetching user profile for userId:', userId);
       
-      // Get current session for auth
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const response = await fetch('/api/auth/profile', {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        console.error('Error fetching user profile via API:', {
-          status: response.status,
-          statusText: response.statusText,
-          userId
+      // Try API first
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch('/api/auth/profile', {
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json'
+          }
         });
-        return null;
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (!result.error && result.profile) {
+            console.log('Successfully fetched user profile via API:', result.profile?.email);
+            return result.profile as UserProfile;
+          }
+        }
+        
+        console.log('API approach failed, trying direct database query');
+      } catch (apiError) {
+        console.log('API fetch failed, falling back to direct query:', apiError);
       }
-
-      const result = await response.json();
       
-      if (result.error) {
-        console.error('API returned error:', result.error, 'userId:', userId);
+      // Fallback: Direct database query with RLS (should work for user's own profile)
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching user profile directly:', error);
         return null;
       }
 
-      console.log('Successfully fetched user profile:', result.profile?.email);
-      return result.profile as UserProfile;
+      console.log('Successfully fetched user profile directly:', profile?.email);
+      return profile as UserProfile;
     } catch (error) {
       console.error('Error fetching user profile (catch block):', error, 'userId:', userId);
       return null;
