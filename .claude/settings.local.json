@@ -36,7 +36,8 @@
       "Bash(npm run test:*)",
       "Bash(cd \"C:\\projects\\pennington-portfolio\")",
       "Bash(find src -name \"*user*\" -type f)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebFetch(domain:www.monkeylovestack.com)"
     ],
     "deny": []
   }

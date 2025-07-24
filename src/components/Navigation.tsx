@@ -112,8 +112,12 @@ export default function Navigation() {
             
             {/* Protected items for authenticated users */}
             {user && protectedNavItems.map((item) => {
+              // For debugging: show all items temporarily, but add visual indicators
+              const isAdminOnlyItem = item.href === '/dashboard/users' || item.href === '/dashboard/clients';
+              const isAdminUser = userProfile?.role === 'admin';
+              
               // Hide Users and Clients links from non-admin users
-              if ((item.href === '/dashboard/users' || item.href === '/dashboard/clients') && userProfile?.role !== 'admin') {
+              if (isAdminOnlyItem && !isAdminUser) {
                 return null;
               }
               
@@ -126,6 +130,7 @@ export default function Navigation() {
                       ? 'text-blue-600 bg-blue-50'
                       : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
+                  title={`Role: ${userProfile?.role || 'loading'}`}
                 >
                   {item.name}
                 </Link>
@@ -275,8 +280,12 @@ export default function Navigation() {
             
             {/* Protected items for authenticated users */}
             {user && protectedNavItems.map((item) => {
+              // For debugging: show all items temporarily, but add visual indicators
+              const isAdminOnlyItem = item.href === '/dashboard/users' || item.href === '/dashboard/clients';
+              const isAdminUser = userProfile?.role === 'admin';
+              
               // Hide Users and Clients links from non-admin users
-              if ((item.href === '/dashboard/users' || item.href === '/dashboard/clients') && userProfile?.role !== 'admin') {
+              if (isAdminOnlyItem && !isAdminUser) {
                 return null;
               }
               
@@ -290,6 +299,7 @@ export default function Navigation() {
                       : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
+                  title={`Role: ${userProfile?.role || 'loading'}`}
                 >
                   {item.name}
                 </Link>
