@@ -48,27 +48,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile from database directly (fallback if API fails)
+  // Fetch user profile from database directly (secure approach)
   const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       console.log('Fetching user profile for userId:', userId);
       
-      // Try API first
+      // Try API first with proper authentication
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user } } = await supabase.auth.getUser();
         
-        const response = await fetch('/api/auth/profile', {
-          headers: {
-            'Authorization': `Bearer ${session?.access_token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          if (!result.error && result.profile) {
-            console.log('Successfully fetched user profile via API:', result.profile?.email);
-            return result.profile as UserProfile;
+        if (user) {
+          const response = await fetch('/api/auth/profile', {
+            headers: {
+              'Authorization': `Bearer ${user.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (!result.error && result.profile) {
+              console.log('Successfully fetched user profile via API:', result.profile?.email);
+              return result.profile as UserProfile;
+            }
           }
         }
         
@@ -126,20 +128,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Get initial session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Get initial user (secure method)
+        const { data: { user }, error } = await supabase.auth.getUser();
         
         if (error) {
-          console.error('Error getting session:', error);
+          console.error('Error getting user:', error);
           return;
         }
 
-        if (session) {
+        if (user) {
+          // Get session for session state
+          const { data: { session } } = await supabase.auth.getSession();
           setSession(session);
-          setUser(session.user);
+          setUser(user);
           
           // Fetch user profile
-          const profile = await fetchUserProfile(session.user.id);
+          const profile = await fetchUserProfile(user.id);
           setUserProfile(profile);
         }
       } catch (error) {
