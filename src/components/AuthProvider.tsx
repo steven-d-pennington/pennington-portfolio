@@ -48,39 +48,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile from database via API (bypasses RLS issues)
+  // Fetch user profile via API (bypasses RLS issues)
   const fetchUserProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       console.log('Fetching user profile for userId:', userId);
       
-      // Get current session for auth
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const response = await fetch('/api/auth/profile', {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Use proper profile API endpoint
+      const response = await fetch('/api/user/profile');
       
       if (!response.ok) {
-        console.error('Error fetching user profile via API:', {
-          status: response.status,
-          statusText: response.statusText,
-          userId
-        });
+        console.error('Profile API failed:', response.status, response.statusText);
         return null;
       }
 
       const result = await response.json();
       
       if (result.error) {
-        console.error('API returned error:', result.error, 'userId:', userId);
+        console.error('Profile API returned error:', result.error);
         return null;
       }
 
-      console.log('Successfully fetched user profile:', result.profile?.email);
-      return result.profile as UserProfile;
+      if (result.profile) {
+        console.log('Successfully fetched user profile via API:', result.profile.email);
+        return result.profile as UserProfile;
+      }
+
+      console.log('No profile found in API response');
+      return null;
     } catch (error) {
       console.error('Error fetching user profile (catch block):', error, 'userId:', userId);
       return null;
@@ -116,21 +110,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Get initial session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Start with session to check if user is logged in
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error('Error getting session:', error);
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
           return;
         }
 
-        if (session) {
-          setSession(session);
-          setUser(session.user);
-          
-          // Fetch user profile
-          const profile = await fetchUserProfile(session.user.id);
-          setUserProfile(profile);
+        if (session && session.user) {
+          // If we have a session, verify with getUser() for security
+          try {
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            
+            if (userError || !user) {
+              console.log('Session exists but user verification failed, clearing session');
+              await supabase.auth.signOut();
+              return;
+            }
+
+            setSession(session);
+            setUser(user);
+            
+            // Fetch user profile
+            const profile = await fetchUserProfile(user.id);
+            setUserProfile(profile);
+          } catch (userError) {
+            console.log('User verification failed, using session user:', userError);
+            // Fallback to session user if getUser() fails
+            setSession(session);
+            setUser(session.user);
+            
+            const profile = await fetchUserProfile(session.user.id);
+            setUserProfile(profile);
+          }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -153,7 +166,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Add a small delay to ensure session is fully established
           await new Promise(resolve => setTimeout(resolve, 100));
           
-          // Fetch user profile
+          // For auth state changes, we can trust the session user
+          // since this is triggered by actual auth events
           let profile = await fetchUserProfile(session.user.id);
           if (!profile) {
             console.log('Profile not found, attempting to create new profile for user:', session.user.email);
