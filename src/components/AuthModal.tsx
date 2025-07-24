@@ -19,7 +19,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const { signUp, signIn, resetPassword, signInWithGoogle } = useAuthActions();
+  const { signUp, signIn, resetPassword /* signInWithGoogle */ } = useAuthActions();
 
   const resetForm = () => {
     setEmail('');
@@ -215,14 +215,22 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
             </button>
           </form>
 
+          {/* GOOGLE AUTH TEMPORARILY DISABLED - 2025-01-24
+           * 
+           * Google OAuth button was disabled because provider is not configured in Supabase.
+           * 
+           * TO RE-ENABLE: Uncomment the sections below after configuring Google OAuth in Supabase.
+           * See AuthProvider.tsx for detailed re-enabling instructions.
+           */}
+
           {/* OR Divider */}
-          <div className="relative flex justify-center text-sm my-6">
+          {/* <div className="relative flex justify-center text-sm my-6">
             <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">OR</span>
             <div className="absolute inset-y-0 left-0 w-full border-t border-gray-200 dark:border-gray-700" aria-hidden="true"></div>
-          </div>
+          </div> */}
 
           {/* Social Login Options */}
-          <button
+          {/* <button
             onClick={signInWithGoogle}
             className="w-full py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors flex items-center justify-center space-x-2"
           >
@@ -233,7 +241,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
               <path d="M9 3.5C10.25 3.5 11.36 3.92 12.24 4.76L14.9 2.09C13.46 0.76 11.43 0 9 0C5.9 0 3.2 1.81 2.61 4.4345L5.27 6.4345C5.84 4.8645 7.31 3.5 9 3.5Z" fill="#EA4335"/>
             </svg>
             <span>Sign in with Google</span>
-          </button>
+          </button> */}
 
           {/* Mode Switching */}
           <div className="mt-6 text-center text-sm">

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
-  const { signInWithGoogle, signIn } = useAuthActions();
+  const { /* signInWithGoogle, */ signIn } = useAuthActions();
   const { session, loading } = useSession();
   const router = useRouter();
   
@@ -38,20 +38,25 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setError('');
-    setIsSigningIn(true);
-    try {
-      const { error: googleError } = await signInWithGoogle();
-      if (googleError) {
-        setError(googleError.message || 'Failed to sign in with Google');
-      }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
+  /* GOOGLE AUTH TEMPORARILY DISABLED - 2025-01-24
+   * 
+   * Google sign-in handler disabled because provider not configured in Supabase.
+   * See AuthProvider.tsx for re-enabling instructions.
+   */
+  // const handleGoogleSignIn = async () => {
+  //   setError('');
+  //   setIsSigningIn(true);
+  //   try {
+  //     const { error: googleError } = await signInWithGoogle();
+  //     if (googleError) {
+  //       setError(googleError.message || 'Failed to sign in with Google');
+  //     }
+  //   } catch (err: unknown) {
+  //     setError(err instanceof Error ? err.message : 'Failed to sign in with Google');
+  //   } finally {
+  //     setIsSigningIn(false);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -117,7 +122,14 @@ export default function LoginPage() {
             </div>
           </form>
 
-          <div className="mt-6">
+          {/* GOOGLE AUTH TEMPORARILY DISABLED - 2025-01-24
+           * 
+           * Google sign-in button disabled because provider not configured in Supabase.
+           * Uncomment the section below after setting up Google OAuth in Supabase.
+           * See AuthProvider.tsx for detailed re-enabling instructions.
+           */}
+
+          {/* <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300 dark:border-gray-600" />
@@ -142,7 +154,7 @@ export default function LoginPage() {
                 <span className="ml-2">Sign in with Google</span>
               </button>
             </div>
-          </div>
+          </div> */}
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">

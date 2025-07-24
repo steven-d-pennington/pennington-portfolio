@@ -25,7 +25,8 @@ type AuthContextType = {
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<{ error: unknown }>;
   refreshSession: () => Promise<void>;
-  signInWithGoogle: () => Promise<{ error: AuthError | null }>;
+  // GOOGLE AUTH TEMPORARILY DISABLED
+  // signInWithGoogle: () => Promise<{ error: AuthError | null }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -278,15 +279,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    return { error };
-  };
+  /* GOOGLE AUTH TEMPORARILY DISABLED - 2025-01-24
+   * 
+   * This function was disabled because Google OAuth provider is not configured in Supabase.
+   * 
+   * TO RE-ENABLE GOOGLE AUTH:
+   * 1. Enable Google provider in Supabase Dashboard → Authentication → Providers
+   * 2. Create OAuth 2.0 credentials in Google Cloud Console (separate from Gmail API credentials)
+   * 3. Configure authorized redirect URIs in Google Cloud Console:
+   *    - https://[your-project].supabase.co/auth/v1/callback
+   * 4. Add credentials to Supabase provider configuration
+   * 5. Uncomment this function and update the type definition above
+   * 6. Uncomment Google auth buttons in AuthModal.tsx and login/page.tsx
+   * 
+   * The implementation below is functional and ready to use once backend is configured.
+   */
+  // const signInWithGoogle = async () => {
+  //   const { error } = await supabase.auth.signInWithOAuth({
+  //     provider: 'google',
+  //     options: {
+  //       redirectTo: `${window.location.origin}/auth/callback`,
+  //     },
+  //   });
+  //   return { error };
+  // };
 
   const value: AuthContextType = {
     user,
@@ -299,7 +315,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword,
     updateProfile,
     refreshSession,
-    signInWithGoogle,
+    // GOOGLE AUTH TEMPORARILY DISABLED
+    // signInWithGoogle,
   };
 
   return (
@@ -321,6 +338,6 @@ export function useSession() {
 }
 
 export function useAuthActions() {
-  const { signUp, signIn, signOut, resetPassword, updateProfile, refreshSession, signInWithGoogle } = useAuth();
-  return { signUp, signIn, signOut, resetPassword, updateProfile, refreshSession, signInWithGoogle };
+  const { signUp, signIn, signOut, resetPassword, updateProfile, refreshSession /* signInWithGoogle */ } = useAuth();
+  return { signUp, signIn, signOut, resetPassword, updateProfile, refreshSession /* signInWithGoogle */ };
 }
