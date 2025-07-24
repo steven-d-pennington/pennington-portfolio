@@ -8,7 +8,6 @@ import FloatingChat from "@/components/FloatingChat";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import AuthErrorHandler from "@/components/AuthErrorHandler";
-import NavigationDebug from "@/components/NavigationDebug";
 import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -53,7 +52,6 @@ export default function RootLayout({
               <CookieConsent />
               <FloatingChat />
               <AuthErrorHandler />
-              <NavigationDebug />
             </div>
           </AuthProvider>
         </ThemeProvider>
