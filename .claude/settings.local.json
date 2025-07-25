@@ -37,7 +37,10 @@
       "Bash(cd \"C:\\projects\\pennington-portfolio\")",
       "Bash(find src -name \"*user*\" -type f)",
       "Bash(curl:*)",
-      "WebFetch(domain:www.monkeylovestack.com)"
+      "WebFetch(domain:www.monkeylovestack.com)",
+      "Bash(NEXT_PUBLIC_SUPABASE_URL=https://htfbommrxngachnglbwk.supabase.co SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZmJvbW1yeG5nYWNobmdsYndrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjI2MTI0OSwiZXhwIjoyMDY3ODM3MjQ5fQ.8gORDd1IlvDmIK6E1kzH-vK1whf5NpcQQNzzegDNxBY node inspect-database.js)",
+      "Bash(NEXT_PUBLIC_SUPABASE_URL=https://htfbommrxngachnglbwk.supabase.co SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZmJvbW1yeG5nYWNobmdsYndrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjI2MTI0OSwiZXhwIjoyMDY3ODM3MjQ5fQ.8gORDd1IlvDmIK6E1kzH-vK1whf5NpcQQNzzegDNxBY node create-test-client-contact.js)",
+      "WebFetch(domain:localhost)"
     ],
     "deny": []
   }

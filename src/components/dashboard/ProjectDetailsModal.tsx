@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useUser } from '@/components/AuthProvider'
+import { useUser } from '@/components/UnifiedAuthProvider'
 import { supabase } from '@/utils/supabase'
 import type { ProjectWithClient } from '@/types/database'
 
@@ -31,12 +31,32 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
   const [project, setProject] = useState<any>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState<any>({})
+  const [clients, setClients] = useState<Array<{id: string, company_name: string, status: string, primary_contact?: {full_name: string, email: string} | null}>>([])
+  const [loadingClients, setLoadingClients] = useState(false)
 
   useEffect(() => {
     if (isOpen && projectId) {
       loadProjectDetails()
+      loadClients()
     }
   }, [isOpen, projectId])
+
+  const loadClients = async () => {
+    setLoadingClients(true)
+    try {
+      const response = await fetch('/api/client-companies')
+      if (!response.ok) {
+        throw new Error('Failed to fetch client companies')
+      }
+      
+      const data = await response.json()
+      setClients(data.companies || [])
+    } catch (error) {
+      console.error('Error loading client companies:', error)
+    } finally {
+      setLoadingClients(false)
+    }
+  }
 
   const loadProjectDetails = async () => {
     if (!projectId) return
@@ -62,6 +82,7 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
       setEditForm({
         name: projectData.name,
         description: projectData.description || '',
+        client_id: projectData.client_id || '',
         status: projectData.status,
         github_repo_url: projectData.github_repo_url || '',
         estimated_hours: projectData.estimated_hours || '',
@@ -227,21 +248,48 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
                 {/* Client Info */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Client</h4>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {project.user_profiles?.full_name || project.user_profiles?.email || 'Unknown Client'}
-                    </p>
-                    {project.user_profiles?.company_name && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {project.user_profiles.company_name}
-                      </p>
-                    )}
-                    {project.user_profiles?.email && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {project.user_profiles.email}
-                      </p>
-                    )}
-                  </div>
+                  {isEditing ? (
+                    <select
+                      value={editForm.client_id}
+                      onChange={(e) => setEditForm({ ...editForm, client_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      disabled={loadingClients}
+                    >
+                      <option value="">Select a client...</option>
+                      {clients.map((client) => (
+                        <option key={client.id} value={client.id}>
+                          {client.company_name} {client.primary_contact && `(${client.primary_contact.full_name})`}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                      {project.client_companies ? (
+                        <>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {project.client_companies.company_name}
+                          </p>
+                          {project.client_companies.industry && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {project.client_companies.industry}
+                            </p>
+                          )}
+                          {project.client_companies.client_contacts && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Contact: {project.client_companies.client_contacts.full_name}
+                            </p>
+                          )}
+                          {project.client_companies.client_contacts?.email && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {project.client_companies.client_contacts.email}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-gray-500 dark:text-gray-400">No client assigned</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* GitHub Integration */}
@@ -404,6 +452,7 @@ export default function ProjectDetailsModal({ isOpen, onClose, projectId, onProj
                     setEditForm({
                       name: project.name,
                       description: project.description || '',
+                      client_id: project.client_id || '',
                       status: project.status,
                       github_repo_url: project.github_repo_url || '',
                       estimated_hours: project.estimated_hours || '',

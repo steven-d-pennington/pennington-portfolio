@@ -1,10 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@/components/AuthProvider';
+import { useUser } from '@/components/UnifiedAuthProvider';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import CreateClientModal from '@/components/dashboard/CreateClientModal';
 import ClientDetailsModal from '@/components/dashboard/ClientDetailsModal';
+import InviteClientModal from '@/components/dashboard/InviteClientModal';
+import { FullPageLoading, InlineLoading } from '@/components/LoadingSpinner';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
+import { ClientsEmptyState } from '@/components/EmptyState';
 import type { ClientCompanyWithOwner } from '@/types/database';
 
 interface ClientsResponse {
@@ -26,20 +31,30 @@ function ClientsPage() {
   const { userProfile } = useUser();
   const [clients, setClients] = useState<ClientCompanyWithOwner[]>([]);
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, prospect: 0 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientCompanyWithOwner | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'prospect'>('all');
 
   // Check if user is admin
   const isAdmin = userProfile?.role === 'admin';
 
+  const { loading, error, data, execute: loadClients } = useAsyncOperation<ClientsResponse>({
+    onSuccess: () => {
+      // Data will be available via the `data` state from the hook
+    }
+  });
+
+  // Update local state when data changes
+  useEffect(() => {
+    if (data && data.companies) {
+      setClients(data.companies);
+      setStats(data.stats);
+    }
+  }, [data]);
+
   const fetchClients = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
+    await loadClients(async () => {
       const params = new URLSearchParams({
         status: statusFilter,
         include_contacts: 'true',
@@ -52,22 +67,15 @@ function ClientsPage() {
         throw new Error(`Failed to fetch clients: ${response.status}`);
       }
       
-      const data: ClientsResponse = await response.json();
-      setClients(data.companies);
-      setStats(data.stats);
-    } catch (err) {
-      console.error('Error fetching clients:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch clients');
-    } finally {
-      setLoading(false);
-    }
+      return await response.json();
+    });
   };
 
   useEffect(() => {
     if (isAdmin) {
       fetchClients();
     }
-  }, [isAdmin, statusFilter]);
+  }, [isAdmin, statusFilter]); // Removed loadClients to prevent infinite loop
 
   const handleClientCreated = (newClient: ClientCompanyWithOwner) => {
     setClients(prev => [newClient, ...prev]);
@@ -114,6 +122,8 @@ function ClientsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs />
+        
         {/* Header */}
         <div className="mb-8">
           <div className="sm:flex sm:items-center sm:justify-between">
@@ -125,7 +135,16 @@ function ClientsPage() {
                 Manage client companies and their team contacts
               </p>
             </div>
-            <div className="mt-4 sm:mt-0">
+            <div className="mt-4 sm:mt-0 flex space-x-3">
+              <button
+                onClick={() => setIsInviteModalOpen(true)}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Invite Contact
+              </button>
               <button
                 onClick={() => setIsCreateModalOpen(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
@@ -234,9 +253,8 @@ function ClientsPage() {
           </div>
           
           {loading ? (
-            <div className="p-8 text-center">
-              <div className="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Loading clients...</p>
+            <div className="p-8">
+              <InlineLoading text="Loading clients..." />
             </div>
           ) : error ? (
             <div className="p-8 text-center">
@@ -249,27 +267,10 @@ function ClientsPage() {
               </button>
             </div>
           ) : clients.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No clients yet</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Add your first client company to get started with project management.
-                  </p>
-                  <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                  >
-                    Add First Client
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ClientsEmptyState 
+              onCreateClient={() => setIsCreateModalOpen(true)}
+              className="py-16"
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -353,6 +354,15 @@ function ClientsPage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onClientCreated={handleClientCreated}
+      />
+
+      <InviteClientModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onInviteSuccess={() => {
+          // Optionally refresh the clients list or show a success message
+          fetchClients();
+        }}
       />
 
       {selectedClient && (

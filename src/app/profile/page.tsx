@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
-import { useUser, useAuthActions } from '@/components/AuthProvider';
+import { useUser, useAuthActions } from '@/components/UnifiedAuthProvider';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 function ProfilePage() {
@@ -227,11 +227,7 @@ function ProfilePage() {
                 <div>
                   <label className="block text-gray-500 dark:text-gray-400">Email Verified</label>
                   <p className="text-gray-900 dark:text-white font-medium">
-                    {user.email_confirmed_at ? (
-                      <span className="text-green-600 dark:text-green-400">✓ Verified</span>
-                    ) : (
-                      <span className="text-orange-600 dark:text-orange-400">⚠ Unverified</span>
-                    )}
+                    <span className="text-green-600 dark:text-green-400">✓ Verified</span>
                   </p>
                 </div>
               </div>

@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser } from '@/components/AuthProvider'
+import { useAuth } from '@/components/UnifiedAuthProvider'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { supabase } from '@/utils/supabase'
 import CreateProjectModal from '@/components/dashboard/CreateProjectModal'
 import ProjectDetailsModal from '@/components/dashboard/ProjectDetailsModal'
@@ -28,7 +29,7 @@ const formatHours = (hours: number) => {
 }
 
 function ProjectsDashboardPage() {
-  const { user, userProfile } = useUser()
+  const { user } = useAuth()
   const [projects, setProjects] = useState<ProjectWithClient[]>([])
   const [stats, setStats] = useState({
     totalProjects: 0,
@@ -42,16 +43,18 @@ function ProjectsDashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [clientFilter, setClientFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
 
   useEffect(() => {
-    if (user && userProfile) {
+    if (user) {
       loadDashboardData()
     }
-  }, [user, userProfile])
+  }, [user])
 
   const loadDashboardData = async () => {
-    if (!user?.id || !userProfile) {
-      console.log('Missing user or userProfile:', { user: !!user, userProfile: !!userProfile })
+    if (!user?.id) {
+      console.log('Missing user:', { user: !!user })
       return
     }
 
@@ -59,12 +62,12 @@ function ProjectsDashboardPage() {
       setLoading(true)
       
       // Check if user has access to project dashboard
-      if (!userProfile.role || !['client', 'admin', 'team_member'].includes(userProfile.role)) {
-        setError(`You do not have permission to access the project dashboard. Your role: ${userProfile.role}`)
+      if (!user.role || !['client', 'admin', 'team_member'].includes(user.role)) {
+        setError(`You do not have permission to access the project dashboard. Your role: ${user.role}`)
         return
       }
 
-      const isAdmin = userProfile.role === 'admin'
+      const isAdmin = user.role === 'admin'
       
       // Try multiple methods to get a valid session
       let session = null
@@ -144,6 +147,24 @@ function ProjectsDashboardPage() {
     }
   }
 
+  // Filter projects based on selected filters
+  const filteredProjects = projects.filter(project => {
+    const statusMatch = statusFilter === 'all' || project.status === statusFilter
+    const clientMatch = clientFilter === 'all' || project.client_id === clientFilter
+    return statusMatch && clientMatch
+  })
+
+  // Get unique clients for filter dropdown
+  const uniqueClients = projects.reduce((acc: Array<{id: string, name: string}>, project) => {
+    if (project.client && project.client_id && !acc.find(c => c.id === project.client_id)) {
+      acc.push({
+        id: project.client_id,
+        name: project.client.full_name || project.client.email || 'Unknown Client'
+      })
+    }
+    return acc
+  }, []).sort((a, b) => a.name.localeCompare(b.name))
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -211,6 +232,8 @@ function ProjectsDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs />
+        
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -222,7 +245,7 @@ function ProjectsDashboardPage() {
                 Track your projects, time, and invoices
               </p>
             </div>
-            {userProfile?.role === 'admin' && (
+            {user?.role === 'admin' && (
               <button 
                 onClick={() => setShowCreateModal(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -232,6 +255,62 @@ function ProjectsDashboardPage() {
             )}
           </div>
         </div>
+
+        {/* Filters */}
+        {projects.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Filter Projects</h3>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Status
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option value="all">All Status</option>
+                  <option value="planning">Planning</option>
+                  <option value="active">Active</option>
+                  <option value="on_hold">On Hold</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Client
+                </label>
+                <select
+                  value={clientFilter}
+                  onChange={(e) => setClientFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option value="all">All Clients</option>
+                  {uniqueClients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {(statusFilter !== 'all' || clientFilter !== 'all') && (
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setStatusFilter('all')
+                      setClientFilter('all')
+                    }}
+                    className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -286,20 +365,25 @@ function ProjectsDashboardPage() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Your Projects</h2>
           </div>
           
-          {projects.length === 0 ? (
+          {filteredProjects.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <div className="max-w-md mx-auto">
                 <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No projects yet</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  {projects.length === 0 ? 'No projects yet' : 'No projects match your filters'}
+                </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-4">
-                  {userProfile?.role === 'admin' ? 
-                    "Get started by creating your first project." :
-                    "You haven't been assigned to any projects yet."
-                  }
+                  {projects.length === 0 ? (
+                    user?.role === 'admin' ? 
+                      "Get started by creating your first project." :
+                      "You haven't been assigned to any projects yet."
+                  ) : (
+                    "Try adjusting your filters to see more projects."
+                  )}
                 </p>
-                {userProfile?.role === 'admin' && (
+                {user?.role === 'admin' && projects.length === 0 && (
                   <button 
                     onClick={() => setShowCreateModal(true)}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -307,11 +391,22 @@ function ProjectsDashboardPage() {
                     Create Project
                   </button>
                 )}
+                {projects.length > 0 && filteredProjects.length === 0 && (
+                  <button
+                    onClick={() => {
+                      setStatusFilter('all')
+                      setClientFilter('all')
+                    }}
+                    className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </div>
             </div>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <div key={project.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
@@ -331,6 +426,15 @@ function ProjectsDashboardPage() {
                       )}
                       
                       <div className="flex items-center space-x-6 mt-3 text-sm text-gray-500 dark:text-gray-400">
+                        {project.client && (
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span className="font-medium">{project.client.full_name || project.client.email || 'Unknown Client'}</span>
+                          </div>
+                        )}
+
                         {project.github_repo_name && (
                           <div className="flex items-center">
                             <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -370,7 +474,7 @@ function ProjectsDashboardPage() {
                       >
                         View Details
                       </button>
-                      {(userProfile?.role === 'admin' || userProfile?.role === 'team_member') && (
+                      {(user?.role === 'admin' || user?.role === 'team_member') && (
                         <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -407,9 +511,5 @@ function ProjectsDashboardPage() {
 }
 
 export default function ProjectsDashboard() {
-  return (
-    <ProtectedRoute requiredRole={['client', 'admin', 'team_member']}>
-      <ProjectsDashboardPage />
-    </ProtectedRoute>
-  )
+  return <ProjectsDashboardPage />
 }

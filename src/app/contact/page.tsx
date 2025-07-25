@@ -1,8 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
+import { useToast } from '@/components/ToastProvider';
+import FormField, { SelectField, TextareaField } from '@/components/FormField';
+import { InlineLoading } from '@/components/LoadingSpinner';
 
 export default function Contact() {
+  const { showSuccess } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,8 +19,16 @@ export default function Contact() {
     message: ''
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  
+  const { loading: isSubmitting, execute: submitForm } = useAsyncOperation({
+    onSuccess: () => {
+      showSuccess('Message sent successfully!', 'Thank you for your inquiry. We\'ll get back to you soon.');
+      setSubmitSuccess(true);
+      resetForm();
+      setTimeout(() => setSubmitSuccess(false), 5000);
+    }
+  });
 
   const projectTypes = [
     'Web Application',
@@ -46,19 +59,27 @@ export default function Contact() {
     'Flexible'
   ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      company: '',
+      projectType: '',
+      budget: '',
+      timeline: '',
+      description: '',
+      message: ''
+    });
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    try {
+    await submitForm(async () => {
       // Submit form data to our API endpoint
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -74,29 +95,8 @@ export default function Contact() {
         throw new Error(result.message || 'Failed to submit form');
       }
       
-      // Show success message
-      setSubmitSuccess(true);
-      
-      // Reset form after success
-      setTimeout(() => {
-        setSubmitSuccess(false);
-        setFormData({
-          name: '',
-          email: '',
-          company: '',
-          projectType: '',
-          budget: '',
-          timeline: '',
-          description: '',
-          message: ''
-        });
-      }, 5000);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('There was an error submitting your request. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
+      return result;
+    });
   };
 
   return (
@@ -187,141 +187,88 @@ export default function Contact() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                        Name *
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                        Email *
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
-                      Company
-                    </label>
-                    <input
+                    <FormField
+                      label="Name"
+                      name="name"
                       type="text"
-                      id="company"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                      value={formData.name}
+                      onChange={(value) => handleFieldChange('name', value)}
+                      required
+                      placeholder="Your full name"
+                    />
+                    <FormField
+                      label="Email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(value) => handleFieldChange('email', value)}
+                      required
+                      placeholder="your.email@example.com"
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="projectType" className="block text-sm font-medium text-gray-700 mb-2">
-                      Project Type
-                    </label>
-                    <select
-                      id="projectType"
-                      name="projectType"
-                      value={formData.projectType}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                    >
-                      <option value="">Select a project type</option>
-                      {projectTypes.map((type) => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <FormField
+                    label="Company"
+                    name="company"
+                    type="text"
+                    value={formData.company}
+                    onChange={(value) => handleFieldChange('company', value)}
+                    placeholder="Your company name"
+                  />
+
+                  <SelectField
+                    label="Project Type"
+                    name="projectType"
+                    value={formData.projectType}
+                    onChange={(value) => handleFieldChange('projectType', value)}
+                    options={projectTypes.map(type => ({ value: type, label: type }))}
+                    placeholder="Select a project type"
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-2">
-                        Budget Range
-                      </label>
-                      <select
-                        id="budget"
-                        name="budget"
-                        value={formData.budget}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                      >
-                        <option value="">Select budget range</option>
-                        {budgetRanges.map((range) => (
-                          <option key={range} value={range}>{range}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="timeline" className="block text-sm font-medium text-gray-700 mb-2">
-                        Timeline
-                      </label>
-                      <select
-                        id="timeline"
-                        name="timeline"
-                        value={formData.timeline}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                      >
-                        <option value="">Select timeline</option>
-                        {timelineOptions.map((option) => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                      Project Description *
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      required
-                      rows={4}
-                      placeholder="Tell me about your project, goals, and requirements..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                    <SelectField
+                      label="Budget Range"
+                      name="budget"
+                      value={formData.budget}
+                      onChange={(value) => handleFieldChange('budget', value)}
+                      options={budgetRanges.map(range => ({ value: range, label: range }))}
+                      placeholder="Select budget range"
+                    />
+                    <SelectField
+                      label="Timeline"
+                      name="timeline"
+                      value={formData.timeline}
+                      onChange={(value) => handleFieldChange('timeline', value)}
+                      options={timelineOptions.map(option => ({ value: option, label: option }))}
+                      placeholder="Select timeline"
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                      Additional Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      rows={3}
-                      placeholder="Any additional information or questions..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
-                    />
-                  </div>
+                  <TextareaField
+                    label="Project Description"
+                    name="description"
+                    value={formData.description}
+                    onChange={(value) => handleFieldChange('description', value)}
+                    required
+                    rows={4}
+                    placeholder="Tell me about your project, goals, and requirements..."
+                  />
+
+                  <TextareaField
+                    label="Additional Message"
+                    name="message"
+                    value={formData.message}
+                    onChange={(value) => handleFieldChange('message', value)}
+                    rows={3}
+                    placeholder="Any additional information or questions..."
+                  />
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
                   >
+                    {isSubmitting && <InlineLoading />}
                     {isSubmitting ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>

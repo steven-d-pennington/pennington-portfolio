@@ -8,7 +8,23 @@ This is "Monkey LoveStack" - a professional portfolio website for a full-stack d
 
 ## Common Development Commands
 
-### Development
+### Development Server Management
+**⚠️ IMPORTANT: Always check for existing dev servers before starting a new one**
+
+Before starting any development server, check if one is already running:
+```bash
+# Check for existing Next.js dev servers
+netstat -ano | findstr :3000
+netstat -ano | findstr :3001
+
+# Or check for node processes
+tasklist | findstr node
+
+# Kill existing dev servers if needed (replace PID with actual process ID)
+taskkill /PID <process_id> /F
+```
+
+### Development Commands
 - `npm run dev` - Start development server with Turbopack on localhost:3000
 - `npm run dev:safe` - Start development server with webpack (fallback mode)
 - `npm run dev:host` - Start development server accessible on network (port 12000)
@@ -16,6 +32,13 @@ This is "Monkey LoveStack" - a professional portfolio website for a full-stack d
 - `npm run build:webpack` - Build for production with webpack
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint for code quality
+
+### Development Server Best Practices
+1. **Check first**: Always verify no existing dev server is running
+2. **One server**: Only run one development server at a time
+3. **Clean shutdown**: Use Ctrl+C to properly stop the dev server
+4. **Port conflicts**: If port 3000 is busy, Next.js will auto-assign 3001, 3002, etc.
+5. **Multiple servers cause**: Performance issues, port conflicts, and confusion
 
 ### Testing & Debugging
 - `npm run test:supabase` - Test Supabase database connection

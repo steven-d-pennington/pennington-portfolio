@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuthActions, useSession } from '@/components/AuthProvider';
+import { useAuthActions, useSession } from '@/components/UnifiedAuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -47,7 +47,7 @@ export default function SignupPage() {
       });
 
       if (signUpError) {
-        setError(signUpError.message || 'Failed to create account');
+        setError(signUpError);
       } else {
         setSuccess('Account created successfully! Please check your email to verify your account.');
       }

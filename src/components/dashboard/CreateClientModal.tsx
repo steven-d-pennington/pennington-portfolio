@@ -1,7 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { CreateClientCompanyWithOwnerForm, ClientCompanyWithOwner } from '@/types/database';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
+import { InlineLoading } from '@/components/LoadingSpinner';
+import FormField, { SelectField, TextareaField } from '@/components/FormField';
+import { useToast } from '@/components/ToastProvider';
 
 interface CreateClientModalProps {
   isOpen: boolean;
@@ -14,6 +18,7 @@ export default function CreateClientModal({
   onClose,
   onClientCreated
 }: CreateClientModalProps) {
+  const { showSuccess } = useToast();
   const [formData, setFormData] = useState<CreateClientCompanyWithOwnerForm>({
     company_name: '',
     industry: '',
@@ -31,8 +36,19 @@ export default function CreateClientModal({
     owner_department: ''
   });
   
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, error, data, execute: submitClient } = useAsyncOperation<ClientCompanyWithOwner>({
+    onSuccess: () => {
+      showSuccess('Client created successfully!');
+      resetForm();
+    }
+  });
+
+  // Handle successful client creation
+  useEffect(() => {
+    if (data) {
+      onClientCreated(data);
+    }
+  }, [data, onClientCreated]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -42,12 +58,29 @@ export default function CreateClientModal({
     }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      company_name: '',
+      industry: '',
+      website: '',
+      address: '',
+      phone: '',
+      email: '',
+      billing_address: '',
+      tax_id: '',
+      status: 'prospect',
+      owner_full_name: '',
+      owner_email: '',
+      owner_phone: '',
+      owner_title: '',
+      owner_department: ''
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
-    try {
+    const result = await submitClient(async () => {
       const response = await fetch('/api/clients', {
         method: 'POST',
         headers: {
@@ -62,32 +95,8 @@ export default function CreateClientModal({
       }
 
       const result = await response.json();
-      onClientCreated(result.company);
-      
-      // Reset form
-      setFormData({
-        company_name: '',
-        industry: '',
-        website: '',
-        address: '',
-        phone: '',
-        email: '',
-        billing_address: '',
-        tax_id: '',
-        status: 'prospect',
-        owner_full_name: '',
-        owner_email: '',
-        owner_phone: '',
-        owner_title: '',
-        owner_department: ''
-      });
-      
-    } catch (err) {
-      console.error('Error creating client:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create client');
-    } finally {
-      setLoading(false);
-    }
+      return result.company;
+    });
   };
 
   if (!isOpen) return null;
@@ -347,6 +356,7 @@ export default function CreateClientModal({
               disabled={loading}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              {loading && <InlineLoading />}
               {loading ? 'Creating...' : 'Create Client'}
             </button>
           </div>

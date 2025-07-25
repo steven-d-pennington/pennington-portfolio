@@ -27,7 +27,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Use admin client to fetch user profile (bypasses RLS issues)
+    // First check if this is a client contact
+    const { data: clientContact, error: clientError } = await supabaseAdmin
+      .from('client_contacts')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (clientContact) {
+      // This is a client contact, return a profile indicating they should use client portal
+      return NextResponse.json({ 
+        profile: {
+          id: clientContact.id,
+          email: clientContact.email,
+          full_name: clientContact.full_name,
+          role: 'client_contact', // Special role to indicate client contact
+          created_at: clientContact.created_at,
+          updated_at: clientContact.updated_at,
+          is_client_contact: true
+        }
+      });
+    }
+
+    // Not a client contact, check user_profiles table
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('*')

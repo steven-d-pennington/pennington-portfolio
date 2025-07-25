@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin, getProjects } from '@/lib/server-database'
+import { supabaseAdmin, getProjects, getProjectsByClient } from '@/lib/server-database'
 import type { ProjectInsert } from '@/types/database'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
+    const clientId = searchParams.get('clientId')
     const isAdmin = searchParams.get('isAdmin') === 'true'
 
     // Get user from auth header or session
@@ -15,7 +16,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Get projects
-    const projects = await getProjects(userId || undefined, isAdmin)
+    let projects
+    if (clientId) {
+      // Filter projects by client ID
+      projects = await getProjectsByClient(clientId)
+    } else {
+      projects = await getProjects(userId || undefined, isAdmin)
+    }
 
     return NextResponse.json({ projects })
   } catch (error: unknown) {

@@ -1,8 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useUser } from '@/components/AuthProvider'
+import { useUser } from '@/components/UnifiedAuthProvider'
 import { supabase } from '@/utils/supabase'
+import { useAsyncOperation } from '@/hooks/useAsyncOperation'
+import { InlineLoading } from '@/components/LoadingSpinner'
+import FormField, { SelectField } from '@/components/FormField'
+import { useToast } from '@/components/ToastProvider'
 
 interface CreateProjectModalProps {
   isOpen: boolean
@@ -12,7 +16,7 @@ interface CreateProjectModalProps {
 
 export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }: CreateProjectModalProps) {
   const { user } = useUser()
-  const [loading, setLoading] = useState(false)
+  const { showSuccess } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -25,41 +29,54 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
     hourly_rate: '',
     fixed_price: ''
   })
-  const [clients, setClients] = useState<Array<{id: string, full_name: string, email: string, company_name: string | null}>>([])
-  const [loadingClients, setLoadingClients] = useState(false)
+  const [clients, setClients] = useState<Array<{id: string, company_name: string, status: string, primary_contact?: {full_name: string, email: string} | null}>>([])
+  
+  const { loading: loadingClients, execute: loadClients } = useAsyncOperation<Array<{id: string, company_name: string, status: string, primary_contact?: {full_name: string, email: string} | null}>>()
+  const { loading: submitting, execute: submitProject } = useAsyncOperation({
+    onSuccess: () => {
+      showSuccess('Project created successfully!')
+      resetForm()
+      onProjectCreated()
+      onClose()
+    }
+  })
 
   // Load clients when modal opens
   useEffect(() => {
     if (isOpen && !loadingClients && clients.length === 0) {
-      loadClients()
+      loadClients(async () => {
+        const response = await fetch('/api/client-companies')
+        if (!response.ok) {
+          throw new Error('Failed to fetch client companies')
+        }
+        const data = await response.json()
+        const companies = data.companies || []
+        setClients(companies)
+        return companies
+      })
     }
-  }, [isOpen, loadingClients, clients.length])
+  }, [isOpen, loadingClients, clients.length, loadClients])
 
-  const loadClients = async () => {
-    setLoadingClients(true)
-    try {
-      // Using singleton supabase client
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('id, full_name, email, company_name')
-        .in('role', ['client', 'user', 'admin'])
-        .order('full_name')
-
-      if (error) throw error
-      setClients(data || [])
-    } catch (error) {
-      console.error('Error loading clients:', error)
-    } finally {
-      setLoadingClients(false)
-    }
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      client_id: '',
+      github_repo_url: '',
+      status: 'planning',
+      start_date: '',
+      end_date: '',
+      estimated_hours: '',
+      hourly_rate: '',
+      fixed_price: ''
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
 
-    setLoading(true)
-    try {
+    await submitProject(async () => {
       // Using singleton supabase client
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('No session')
@@ -85,27 +102,8 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
         throw new Error(error.error || 'Failed to create project')
       }
 
-      // Reset form and close modal
-      setFormData({
-        name: '',
-        description: '',
-        client_id: '',
-        github_repo_url: '',
-        status: 'planning',
-        start_date: '',
-        end_date: '',
-        estimated_hours: '',
-        hourly_rate: '',
-        fixed_price: ''
-      })
-      onProjectCreated()
-      onClose()
-    } catch (error: unknown) {
-      console.error('Error creating project:', error)
-      alert(error instanceof Error ? error.message : 'Failed to create project')
-    } finally {
-      setLoading(false)
-    }
+      return await response.json()
+    })
   }
 
   if (!isOpen) return null
@@ -121,7 +119,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            disabled={loading}
+            disabled={submitting}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -175,7 +173,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
               <option value="">Select a client...</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
-                  {client.full_name || client.email} {client.company_name && `(${client.company_name})`}
+                  {client.company_name} {client.primary_contact && `(${client.primary_contact.full_name})`}
                 </option>
               ))}
             </select>
@@ -296,23 +294,18 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
             <button
               type="button"
               onClick={onClose}
-              disabled={loading}
+              disabled={submitting}
               className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 flex items-center"
             >
-              {loading && (
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              )}
-              Create Project
+              {submitting && <InlineLoading />}
+              {submitting ? 'Creating...' : 'Create Project'}
             </button>
           </div>
         </form>

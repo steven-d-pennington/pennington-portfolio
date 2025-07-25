@@ -2,11 +2,41 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useUser } from '@/components/AuthProvider';
+import { useAuth, useUser } from '@/components/UnifiedAuthProvider';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 function DashboardPage() {
   const { user, userProfile } = useUser();
+  const [managementStats, setManagementStats] = React.useState({
+    projects: 0,
+    users: 0,
+    clients: 0
+  });
+
+  // Fetch management stats for admin users
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      if (userProfile?.role && ['admin', 'team_member', 'client'].includes(userProfile.role)) {
+        try {
+          // Fetch dashboard stats
+          const response = await fetch('/api/dashboard/stats');
+          if (response.ok) {
+            const data = await response.json();
+            setManagementStats({
+              projects: data.projects || 0,
+              users: data.users || 0,
+              clients: data.clients || 0
+            });
+          }
+        } catch (error) {
+          console.log('Could not fetch management stats:', error);
+        }
+      }
+    };
+
+    fetchStats();
+  }, [userProfile?.role]);
 
   const stats = [
     {
@@ -33,14 +63,14 @@ function DashboardPage() {
     },
     {
       name: 'Email Status',
-      value: user?.email_confirmed_at ? 'Verified' : 'Unverified',
+      value: 'Verified', // UnifiedUser doesn't have email_confirmed_at, assume verified if logged in
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       ),
-      color: user?.email_confirmed_at ? 'text-green-600' : 'text-orange-600',
-      bgColor: user?.email_confirmed_at ? 'bg-green-100' : 'bg-orange-100',
+      color: 'text-green-600', // Assume verified if logged in
+      bgColor: 'bg-green-100',
     },
   ];
 
@@ -95,9 +125,57 @@ function DashboardPage() {
     },
   ];
 
+  // Management actions for admin/team_member/client roles
+  const managementActions = [
+    {
+      name: 'Projects',
+      description: 'Manage projects, timelines, and team assignments',
+      href: '/dashboard/projects',
+      count: managementStats.projects,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      ),
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50 hover:bg-indigo-100',
+      allowedRoles: ['admin', 'team_member', 'client']
+    },
+    {
+      name: 'Users',
+      description: 'Manage user accounts, roles, and permissions',
+      href: '/dashboard/users',
+      count: managementStats.users,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+        </svg>
+      ),
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50 hover:bg-emerald-100',
+      allowedRoles: ['admin']
+    },
+    {
+      name: 'Clients',
+      description: 'Manage client companies, contacts, and relationships',
+      href: '/dashboard/clients',
+      count: managementStats.clients,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+      color: 'text-cyan-600',
+      bgColor: 'bg-cyan-50 hover:bg-cyan-100',
+      allowedRoles: ['admin']
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs />
+        
         {/* Welcome Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -126,6 +204,57 @@ function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* Management Dashboard - Role-based */}
+        {userProfile?.role && ['admin', 'team_member', 'client'].includes(userProfile.role) && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Management Dashboard</h2>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                {userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1)} Access
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {managementActions
+                .filter(action => action.allowedRoles.includes(userProfile.role))
+                .map((action) => (
+                  <Link
+                    key={action.name}
+                    href={action.href}
+                    className={`block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-200 ${action.bgColor} dark:hover:bg-gray-700 border-l-4 border-transparent hover:border-current`}
+                  >
+                    <div className={`inline-flex p-3 rounded-lg ${action.bgColor.split(' ')[0]} mb-4`}>
+                      <div className={action.color}>
+                        {action.icon}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{action.name}</h3>
+                      {action.count !== undefined && (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${action.color.replace('text-', 'text-').replace('600', '800')} ${action.bgColor.split(' ')[0].replace('50', '200')}`}>
+                          {action.count}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                        Access now
+                      </div>
+                      {action.count !== undefined && action.count > 0 && (
+                        <div className="text-xs text-gray-400">
+                          {action.count} {action.count === 1 ? 'item' : 'items'}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="mb-8">

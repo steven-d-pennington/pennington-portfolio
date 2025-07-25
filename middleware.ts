@@ -10,9 +10,20 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const pathname = url.pathname;
 
-  // Define protected routes
+  // Define protected routes (exclude client routes)
   const protectedRoutes = ['/dashboard', '/profile', '/admin'];
   const authRoutes = ['/login', '/signup'];
+  const clientRoutes = ['/client-dashboard', '/client-login'];
+  
+  // Check if the current route is a client route (handled separately)
+  const isClientRoute = clientRoutes.some(route => 
+    pathname.startsWith(route)
+  );
+  
+  // Skip middleware for client routes - they have their own auth handling
+  if (isClientRoute) {
+    return response;
+  }
   
   // Check if the current route is protected
   const isProtectedRoute = protectedRoutes.some(route => 

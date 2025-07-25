@@ -98,12 +98,17 @@ export const navigationConfig: NavigationConfig = {
   protected: [
     {
       name: 'Dashboard',
+      href: '/dashboard',
+      description: 'Management dashboard overview'
+    },
+    {
+      name: 'Projects',
       href: '/dashboard/projects',
-      description: 'Project management dashboard'
+      description: 'Project management and tracking'
     },
     {
       name: 'Users',
-      href: '/dashboard/users', 
+      href: '/dashboard/users',
       description: 'User management (Admin only)'
     },
     {

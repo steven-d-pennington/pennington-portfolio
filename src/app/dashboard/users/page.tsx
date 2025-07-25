@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/components/AuthProvider';
+import { useUser } from '@/components/UnifiedAuthProvider';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import InviteUserModal from '@/components/dashboard/InviteUserModal';
 import UserEditModal from '@/components/dashboard/UserEditModal';
 
@@ -283,6 +284,8 @@ export default function UsersPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <Breadcrumbs />
+        
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">

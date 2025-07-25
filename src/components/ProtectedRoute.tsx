@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from './AuthProvider';
+import { useAuth } from './UnifiedAuthProvider';
 import AuthModal from './AuthModal';
 
 type ProtectedRouteProps = {
@@ -20,7 +20,7 @@ export default function ProtectedRoute({
   showModal = false,
   redirectTo
 }: ProtectedRouteProps) {
-  const { user, userProfile, loading } = useUser();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
@@ -48,7 +48,7 @@ export default function ProtectedRoute({
 
     // Check role requirements if user exists
     if (user && requiredRole.length > 0) {
-      const userRole = userProfile?.role || 'user';
+      const userRole = user.role || 'user';
       const hasRequiredRole = requiredRole.includes(userRole);
       
       if (!hasRequiredRole) {
@@ -61,7 +61,7 @@ export default function ProtectedRoute({
     if (user && authModalOpen) {
       setAuthModalOpen(false);
     }
-  }, [user, userProfile, loading, router, showModal, redirectTo, requiredRole, authModalOpen]);
+  }, [user, loading, router, showModal, redirectTo, requiredRole, authModalOpen]);
 
   // Show loading state
   if (loading) {
@@ -84,7 +84,7 @@ export default function ProtectedRoute({
 
   // Check role permissions
   if (user && requiredRole.length > 0) {
-    const userRole = userProfile?.role || 'user';
+    const userRole = user.role || 'user';
     const hasRequiredRole = requiredRole.includes(userRole);
     
     if (!hasRequiredRole) {
@@ -183,18 +183,17 @@ export function withAuth<P extends object>(
 
 // Hook for checking auth status in components
 export function useRequireAuth(requiredRole?: string[]) {
-  const { user, userProfile, loading } = useUser();
+  const { user, loading } = useAuth();
   
   const isAuthenticated = !!user;
   const isAuthorized = requiredRole 
-    ? requiredRole.includes(userProfile?.role || 'user') 
+    ? requiredRole.includes(user?.role || 'user') 
     : true;
   
   return {
     isAuthenticated,
     isAuthorized: isAuthenticated && isAuthorized,
     loading,
-    user,
-    userProfile
+    user
   };
 }

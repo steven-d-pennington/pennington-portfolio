@@ -5,22 +5,22 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { ThemeToggle } from './ThemeToggle';
-import { useUser, useAuthActions } from './AuthProvider';
-import AuthModal from './AuthModal';
+import { useAuth } from './UnifiedAuthProvider';
 import SecondaryNavigation from './SecondaryNavigation';
 import { navigationConfig, NavigationCategory } from '@/types/navigation';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const pathname = usePathname();
   
-  const { user, userProfile, loading } = useUser();
-  const { signOut } = useAuthActions();
+  // Get auth data from unified auth context
+  const { user, loading, signOut } = useAuth();
+  
 
   const handleSignOut = async () => {
+    if (!signOut) return;
+    
     try {
       const { error } = await signOut();
       if (!error) {
@@ -38,10 +38,6 @@ export default function Navigation() {
     setIsUserMenuOpen(false);
   };
 
-  const openAuthModal = (mode: 'login' | 'signup') => {
-    setAuthMode(mode);
-    setAuthModalOpen(true);
-  };
 
   // Get navigation items from config
   const primaryNavItems = navigationConfig.primary;
@@ -110,27 +106,20 @@ export default function Navigation() {
               </Link>
             ))}
             
-            {/* Protected items for authenticated users */}
-            {user && protectedNavItems.map((item) => {
-              // Hide Users and Clients links from non-admin users
-              if ((item.href === '/dashboard/users' || item.href === '/dashboard/clients') && userProfile?.role !== 'admin') {
-                return null;
-              }
-              
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              );
-            })}
+            {/* Protected items for authenticated users (excluding client contacts) */}
+            {user && user.userType === 'team' && protectedNavItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive(item.href)
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
             
             <ThemeToggle />
             
@@ -145,7 +134,7 @@ export default function Navigation() {
                   className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
                 >
                   <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                    {userProfile?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                    {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
                   </div>
                   <svg className={`w-4 h-4 text-gray-500 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -156,31 +145,51 @@ export default function Navigation() {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                     <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
-                      <div className="font-medium">{userProfile?.full_name || 'User'}</div>
+                      <div className="font-medium">{user.full_name || 'User'}</div>
                       <div className="text-gray-500">{user.email}</div>
+                      {user.userType === 'client' && (
+                        <div className="text-xs text-blue-600 mt-1">Client Contact</div>
+                      )}
                     </div>
-                    <Link
-                      href="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Profile Settings
-                    </Link>
-                    <Link
-                      href="/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Account Dashboard
-                    </Link>
-                    {userProfile?.role && ['client', 'admin', 'team_member'].includes(userProfile.role) && (
-                      <Link
-                        href="/dashboard/projects"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        Project Dashboard
-                      </Link>
+                    
+                    {/* Show different menu items for client contacts */}
+                    {user.userType === 'client' ? (
+                      <>
+                        <Link
+                          href="/client-dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <div className="font-medium">Client Dashboard</div>
+                          <div className="text-xs text-gray-500">View your projects</div>
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href="/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Profile Settings
+                        </Link>
+                        <Link
+                          href="/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Account Dashboard
+                        </Link>
+                        {user.userType === 'team' && (
+                          <Link
+                            href="/dashboard/projects"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            Project Dashboard
+                          </Link>
+                        )}
+                      </>
                     )}
                     <button
                       onClick={handleSignOut}
@@ -194,18 +203,24 @@ export default function Navigation() {
             ) : (
               /* Auth Buttons */
               <div className="flex items-center space-x-6">
-                <button
-                  onClick={() => openAuthModal('login')}
+                <Link
+                  href="/client/login"
+                  className="px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 border border-blue-600 hover:border-blue-700 rounded-md transition-colors"
+                >
+                  Client Portal
+                </Link>
+                <Link
+                  href="/team/login"
                   className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => openAuthModal('signup')}
+                  Team Login
+                </Link>
+                <Link
+                  href="/team/signup"
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
                 >
-                  Sign Up
-                </button>
+                  Join Team
+                </Link>
               </div>
             )}
           </div>
@@ -273,26 +288,22 @@ export default function Navigation() {
               </div>
             ))}
             
-            {/* Protected items for authenticated users */}
-            {user && protectedNavItems.map((item) => {
-              // Hide Users and Clients links from non-admin users
-              if ((item.href === '/dashboard/users' || item.href === '/dashboard/clients') && userProfile?.role !== 'admin') {
-                return null;
-              }
-              
+            {/* Protected items for authenticated users (excluding client contacts) */}
+            {user && user.userType === 'team' && protectedNavItems.map((item) => {
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    isActive(item.href)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
+                <div key={item.name}>
+                  <Link
+                    href={item.href}
+                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                      isActive(item.href)
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                </div>
               );
             })}
             
@@ -305,7 +316,7 @@ export default function Navigation() {
               ) : user ? (
                 <div className="space-y-1">
                   <div className="px-3 py-2 text-base font-medium text-gray-700 border-b border-gray-200">
-                    <div className="font-medium">{userProfile?.full_name || 'User'}</div>
+                    <div className="font-medium">{user.full_name || 'User'}</div>
                     <div className="text-sm text-gray-500">{user.email}</div>
                   </div>
                   <Link
@@ -334,24 +345,27 @@ export default function Navigation() {
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <button
-                    onClick={() => {
-                      openAuthModal('login');
-                      setIsMenuOpen(false);
-                    }}
+                  <Link
+                    href="/client/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block w-full text-left px-3 py-2 text-base font-medium text-blue-600 hover:text-blue-700 border border-blue-600 hover:border-blue-700 rounded-md"
+                  >
+                    Client Portal
+                  </Link>
+                  <Link
+                    href="/team/login"
+                    onClick={() => setIsMenuOpen(false)}
                     className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
                   >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => {
-                      openAuthModal('signup');
-                      setIsMenuOpen(false);
-                    }}
+                    Team Login
+                  </Link>
+                  <Link
+                    href="/team/signup"
+                    onClick={() => setIsMenuOpen(false)}
                     className="block w-full text-left px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
                   >
-                    Sign Up
-                  </button>
+                    Join Team
+                  </Link>
                 </div>
               )}
             </div>
@@ -359,12 +373,6 @@ export default function Navigation() {
         </div>
       )}
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        defaultMode={authMode}
-      />
       
       {/* Secondary Navigation */}
       {currentCategory && (

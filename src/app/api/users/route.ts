@@ -41,9 +41,36 @@ export async function GET(request: NextRequest) {
     // Parse query parameters for filtering
     const role = searchParams.get('role');
     const search = searchParams.get('search');
+    const forClients = searchParams.get('for_clients') === 'true';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = (page - 1) * limit;
+
+    // Special handling for client selection (less restrictive auth)
+    if (forClients) {
+      const { data: allUsers, error: usersError } = await supabaseAdmin
+        .from('user_profiles')
+        .select('id, full_name, email, company_name')
+        .order('full_name');
+
+      if (usersError) {
+        console.error('Error fetching users for clients:', usersError);
+        return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+      }
+
+      // Convert to client-like format
+      const clients = (allUsers || []).map(user => ({
+        id: user.id,
+        company_name: user.company_name || user.full_name || 'Unknown Client',
+        status: 'active',
+        owner_contact: {
+          full_name: user.full_name,
+          email: user.email
+        }
+      }));
+
+      return NextResponse.json({ clients });
+    }
 
     // Build query for internal users (exclude clients - they're managed separately)
     let query = supabaseAdmin

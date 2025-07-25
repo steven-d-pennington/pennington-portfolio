@@ -1,12 +1,11 @@
 'use client';
 
-import { useAuthActions, useSession } from '@/components/AuthProvider';
+import { useAuth } from '@/components/UnifiedAuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
-  const { /* signInWithGoogle, */ signIn } = useAuthActions();
-  const { session, loading } = useSession();
+  const { signIn, user, loading } = useAuth();
   const router = useRouter();
   
   const [email, setEmail] = useState('');
@@ -15,11 +14,11 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!loading && session) {
-      // Redirect to home page after successful login
-      router.push('/');
+    if (!loading && user && user.userType === 'team') {
+      // Redirect to dashboard after successful login
+      router.push('/dashboard');
     }
-  }, [session, loading, router]);
+  }, [user, loading, router]);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +28,7 @@ export default function LoginPage() {
     try {
       const { error: signInError } = await signIn(email, password);
       if (signInError) {
-        setError(signInError.message || 'Failed to sign in');
+        setError(signInError);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
@@ -156,11 +155,16 @@ export default function LoginPage() {
             </div>
           </div> */}
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              <a href="/team/forgot-password" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                Forgot your password?
+              </a>
+            </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Don&apos;t have an account?{' '}
-              <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
-                Sign up here
+              <a href="/team/signup" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                Join our team
               </a>
             </p>
           </div>

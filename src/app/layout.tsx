@@ -1,14 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
+import NavigationWrapper from "@/components/NavigationWrapper";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import FloatingChat from "@/components/FloatingChat";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { AuthProvider } from "@/components/AuthProvider";
+import { UnifiedAuthProvider } from "@/components/UnifiedAuthProvider";
+import RouteGuard from "@/components/RouteGuard";
 import AuthErrorHandler from "@/components/AuthErrorHandler";
 import { Analytics } from "@vercel/analytics/next";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { ToastProvider } from "@/components/ToastProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,20 +44,26 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
       <body className={`${inter.className} overflow-x-hidden`}>
-        <ThemeProvider>
-          <AuthProvider>
-            <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col w-full overflow-x-hidden">
-              <Navigation />
-              <main className="flex-grow w-full overflow-x-hidden">
-                {children}
-              </main>
-              <Footer />
-              <CookieConsent />
-              <FloatingChat />
-              <AuthErrorHandler />
-            </div>
-          </AuthProvider>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider>
+            <ToastProvider>
+              <UnifiedAuthProvider>
+                <RouteGuard>
+                  <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col w-full overflow-x-hidden">
+                    <NavigationWrapper />
+                    <main className="flex-grow w-full overflow-x-hidden">
+                      {children}
+                    </main>
+                    <Footer />
+                    <CookieConsent />
+                    <FloatingChat />
+                    <AuthErrorHandler />
+                  </div>
+                </RouteGuard>
+              </UnifiedAuthProvider>
+            </ToastProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
         <Analytics />
       </body>
     </html>

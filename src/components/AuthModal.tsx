@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuthActions } from './AuthProvider';
+import { useAuth } from './UnifiedAuthProvider';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -19,7 +19,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const { signUp, signIn, resetPassword /* signInWithGoogle */ } = useAuthActions();
+  const { signIn, signUp, resetPassword } = useAuth();
 
   const resetForm = () => {
     setEmail('');
@@ -61,7 +61,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
         });
 
         if (error) {
-          setError(error.message);
+          setError(error);
         } else {
           setMessage('Check your email for the confirmation link!');
           setTimeout(() => handleClose(), 2000);
@@ -70,7 +70,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
         const { error } = await signIn(email, password);
 
         if (error) {
-          setError(error.message);
+          setError(error);
         } else {
           handleClose();
         }
@@ -78,7 +78,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
         const { error } = await resetPassword(email);
 
         if (error) {
-          setError(error.message);
+          setError(error);
         } else {
           setMessage('Check your email for the password reset link!');
         }
